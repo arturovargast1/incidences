@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { logout } from '../lib/auth';
+import { logout, useCurrentUser, loadUserData } from '../lib/auth';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -14,6 +14,38 @@ export default function AppLayout({ children, notificationCount = 0 }: AppLayout
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const pathname = usePathname();
+  const { user, loading } = useCurrentUser();
+  
+  // Obtener las iniciales del usuario
+  const getUserInitials = () => {
+    if (!user) return 'U';
+    
+    // Manejar caso donde first_name o last_name pueden ser undefined o null
+    const firstInitial = user.first_name && typeof user.first_name === 'string' 
+      ? user.first_name.charAt(0).toUpperCase() 
+      : '';
+      
+    const lastInitial = user.last_name && typeof user.last_name === 'string' 
+      ? user.last_name.charAt(0).toUpperCase() 
+      : '';
+    
+    // Si no hay iniciales de nombre, usar la primera letra del email
+    if (firstInitial || lastInitial) {
+      return firstInitial + lastInitial;
+    } else if (user.email && typeof user.email === 'string') {
+      return user.email.charAt(0).toUpperCase();
+    } else {
+      return 'U'; // Fallback si no hay datos
+    }
+  };
+
+  // Cargar datos del usuario al iniciar
+  useEffect(() => {
+    // Cargar los datos del usuario una sola vez al iniciar la aplicación
+    loadUserData().catch(error => {
+      console.error('Error al cargar datos del usuario:', error);
+    });
+  }, []);
 
   // Detectar si es dispositivo móvil
   useEffect(() => {
@@ -212,12 +244,20 @@ export default function AppLayout({ children, notificationCount = 0 }: AppLayout
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
                     <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary-dark)] flex items-center justify-center text-white font-medium shadow-sm">
-                      AE
+                      {loading ? '...' : getUserInitials()}
                     </div>
                   </div>
                   <div className="ml-3">
-                    <p className="text-sm font-medium text-[var(--gray-900)]">Admin Ejemplo</p>
-                    <p className="text-xs text-[var(--gray-500)]">admin@tienvios.com</p>
+                    <p className="text-sm font-medium text-[var(--gray-900)]">
+                      {loading ? 'Cargando...' : user ? 
+                        (user.first_name || user.last_name) ? 
+                          `${user.first_name || ''} ${user.last_name || ''}`.trim() : 
+                          user.email || 'Usuario' 
+                        : 'Usuario'}
+                    </p>
+                    <p className="text-xs text-[var(--gray-500)]">
+                      {loading ? '' : user?.email || 'Sin correo'}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -286,7 +326,7 @@ export default function AppLayout({ children, notificationCount = 0 }: AppLayout
                   <div className="relative">
                     <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-green-400 ring-2 ring-white"></span>
                     <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary-dark)] flex items-center justify-center text-white font-medium shadow-sm">
-                      AE
+                      {loading ? '...' : getUserInitials()}
                     </div>
                   </div>
                 </button>

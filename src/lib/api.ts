@@ -1,4 +1,4 @@
-import { getToken, API_URL } from './auth';
+import { getToken, API_URL, getCurrentUser } from './auth';
 import { Incident, IncidentStatus, IncidentType, IncidentUpdateRequest } from '../types/incidents';
 import { CreateUserRequest, CreateUserResponse, User } from '../types/users';
 
