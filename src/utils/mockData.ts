@@ -23,6 +23,7 @@ export function getMockIncident(incidentId: string = 'INC-00001'): Incident {
     commerceId: 152,
     carrierId: 1, // DHL
     status: 'requires_action',
+    status_mensajeria: 'requires_action',
     type: 'address_change',
     priority: 'medium',
     createdAt: createdDate.toISOString(),
@@ -161,7 +162,9 @@ export function getMockIncidents(count: number = 10): Incident[] {
     
     // Asignar tipo y estado aleatorios
     mockIncident.type = types[Math.floor(Math.random() * types.length)];
-    mockIncident.status = statuses[Math.floor(Math.random() * statuses.length)];
+    const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+    mockIncident.status = randomStatus;
+    mockIncident.status_mensajeria = randomStatus;
     
     // Variar las horas restantes del SLA
     const slaHours = Math.floor(Math.random() * 50);
@@ -241,7 +244,7 @@ export function getMockIncidents(count: number = 10): Incident[] {
     ];
     
     // Añadir más entradas al timeline según el estado
-    if (['in_review', 'in_process', 'approved', 'finalized'].includes(mockIncident.status)) {
+    if (['in_review', 'in_process', 'approved', 'finalized'].includes(randomStatus)) {
       mockIncident.timeline.push({
         status: 'in_review',
         timestamp: new Date(Date.now() - (2 + i) * 24 * 60 * 60 * 1000).toISOString(),
@@ -254,7 +257,7 @@ export function getMockIncidents(count: number = 10): Incident[] {
       });
     }
     
-    if (['in_process', 'approved', 'finalized'].includes(mockIncident.status)) {
+    if (['in_process', 'approved', 'finalized'].includes(randomStatus)) {
       mockIncident.timeline.push({
         status: 'in_process',
         timestamp: new Date(Date.now() - (1 + i) * 24 * 60 * 60 * 1000).toISOString(),
@@ -267,7 +270,7 @@ export function getMockIncidents(count: number = 10): Incident[] {
       });
     }
     
-    if (['approved', 'finalized'].includes(mockIncident.status)) {
+    if (['approved', 'finalized'].includes(randomStatus)) {
       mockIncident.timeline.push({
         status: 'approved',
         timestamp: new Date(Date.now() - i * 12 * 60 * 60 * 1000).toISOString(),
@@ -280,7 +283,7 @@ export function getMockIncidents(count: number = 10): Incident[] {
       });
     }
     
-    if (mockIncident.status === 'finalized') {
+    if (randomStatus === 'finalized') {
       mockIncident.timeline.push({
         status: 'finalized',
         timestamp: new Date(Date.now() - i * 6 * 60 * 60 * 1000).toISOString(),

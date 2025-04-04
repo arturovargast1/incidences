@@ -8,13 +8,8 @@ import IncidentDetail from '../../../components/incidents/IncidentDetail';
 import { fetchIncidentDetails, updateIncident } from '../../../lib/api';
 import { logout } from '../../../lib/auth';
 
-interface Props {
-  params: {
-    id: string;
-  };
-}
-
-export default function IncidentDetailPage({ params }: Props) {
+// Use any for params to avoid type errors with Next.js 15.2.2
+export default function IncidentDetailPage({ params }: { params: any }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [incident, setIncident] = useState<any>(null);

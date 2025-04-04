@@ -6,27 +6,28 @@ const API_BASE_URL = 'https://apiv2.dev.t1envios.com';
 // Variable opcional para depuración
 const DEBUGGING = true;
 
-export async function GET(request: NextRequest, { params }: { params: { path: string[] } }) {
+// Use a simpler approach for Next.js 15.2.2 compatibility
+export async function GET(request: NextRequest, context: any) {
   // Asegurar que params.path exista antes de usarlo
-  const path = params?.path || [];
+  const path = context.params?.path || [];
   return handleRequest(request, path, 'GET');
 }
 
-export async function POST(request: NextRequest, { params }: { params: { path: string[] } }) {
+export async function POST(request: NextRequest, context: any) {
   // Asegurar que params.path exista antes de usarlo
-  const path = params?.path || [];
+  const path = context.params?.path || [];
   return handleRequest(request, path, 'POST');
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { path: string[] } }) {
+export async function PUT(request: NextRequest, context: any) {
   // Asegurar que params.path exista antes de usarlo
-  const path = params?.path || [];
+  const path = context.params?.path || [];
   return handleRequest(request, path, 'PUT');
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { path: string[] } }) {
+export async function DELETE(request: NextRequest, context: any) {
   // Asegurar que params.path exista antes de usarlo
-  const path = params?.path || [];
+  const path = context.params?.path || [];
   return handleRequest(request, path, 'DELETE');
 }
 
@@ -120,7 +121,7 @@ async function handleRequest(
         if (errorData.message) {
           errorMessage = errorData.message;
         }
-      } catch (e) {
+      } catch {
         // Si no se puede parsear como JSON, usar el texto de respuesta
         errorMessage = responseData || 'Información de autenticación no disponible';
       }

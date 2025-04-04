@@ -37,7 +37,7 @@ export async function login(email: string, password: string): Promise<AuthRespon
       try {
         const errorData = JSON.parse(errorText);
         errorMessage = errorData.message || 'Error de autenticación';
-      } catch (e) {
+      } catch {
         errorMessage = `Error de autenticación: ${response.status} ${response.statusText}`;
       }
       
@@ -52,8 +52,8 @@ export async function login(email: string, password: string): Promise<AuthRespon
     try {
       data = JSON.parse(responseText);
       console.log('Parsed login data:', JSON.stringify(data, null, 2));
-    } catch (e) {
-      console.error('Error parsing JSON response:', e);
+    } catch (error) {
+      console.error('Error parsing JSON response:', error);
       throw new Error('Error al procesar la respuesta del servidor');
     }
     
@@ -82,8 +82,8 @@ export async function login(email: string, password: string): Promise<AuthRespon
         const expiryDate = new Date(payload.exp * 1000);
         console.log(`Token expira el: ${expiryDate.toLocaleString()}`);
       }
-    } catch (e) {
-      console.warn('No se pudo decodificar el payload del token:', e);
+    } catch (error) {
+      console.warn('No se pudo decodificar el payload del token:', error);
     }
     
     return data;
