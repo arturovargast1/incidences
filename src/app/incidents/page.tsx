@@ -11,9 +11,11 @@ import {
   INCIDENT_STATUS_NAMES, 
   formatDate,
   fetchIncidenceStats,
+  downloadIncidentsExcel,
   IncidenceStatsResponse,
   CourierStats
 } from '../../lib/api';
+import CsvUploadModal from '../../components/incidents/CsvUploadModal';
 import { Incident } from '../../types/incidents';
 
 export default function IncidentsPage() {
@@ -29,6 +31,9 @@ export default function IncidentsPage() {
   const [slaCounts, setSlaCounts] = useState<{inTime: number, expired: number}>({inTime: 0, expired: 0});
   const [incidenceStats, setIncidenceStats] = useState<IncidenceStatsResponse | null>(null);
   const [loadingStats, setLoadingStats] = useState<boolean>(true);
+  const [exportLoading, setExportLoading] = useState<boolean>(false);
+  const [batchUpdateError, setBatchUpdateError] = useState<string | null>(null);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState<boolean>(false);
   
   const {
     incidents,
@@ -274,6 +279,27 @@ export default function IncidentsPage() {
     router.push(`/incidents/${incident.incidentId}?data=${encodeURIComponent(JSON.stringify(data))}`);
   };
   
+  // Handle Excel export
+  const handleExportToExcel = async () => {
+    try {
+      setExportLoading(true);
+      const response = await downloadIncidentsExcel(selectedCarrier, currentPage, pageSize);
+      
+      if (response.success && response.data?.file_url) {
+        // Open the file URL in a new tab
+        window.open(response.data.file_url, '_blank');
+      } else {
+        console.error('Error al exportar a Excel:', response.message || 'No se pudo obtener la URL del archivo');
+        alert('Error al exportar a Excel: ' + (response.message || 'No se pudo obtener la URL del archivo'));
+      }
+    } catch (error) {
+      console.error('Error al exportar a Excel:', error);
+      alert('Error al exportar a Excel: ' + (error instanceof Error ? error.message : 'Error desconocido'));
+    } finally {
+      setExportLoading(false);
+    }
+  };
+  
   return (
     <AuthGuard>
       <AppLayout notificationCount={statusCounts.requires_action || 0}>
@@ -344,6 +370,40 @@ export default function IncidentsPage() {
             </div>
           </div>
           
+          {/* CSV Upload Modal */}
+          <CsvUploadModal 
+            isOpen={isUploadModalOpen}
+            onClose={() => setIsUploadModalOpen(false)}
+            onSuccess={() => {
+              refreshData();
+              setBatchUpdateError(null);
+            }}
+            onError={(error: string) => setBatchUpdateError(error)}
+          />
+          
+          {/* Error message for batch update */}
+          {batchUpdateError && (
+            <div className="tienvios-card p-4 mb-6 bg-red-50 border border-red-200">
+              <div className="flex items-start">
+                <svg className="w-5 h-5 text-red-600 mt-0.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <h3 className="text-sm font-bold text-red-800">Error al actualizar incidencias</h3>
+                  <p className="text-sm text-red-700">{batchUpdateError}</p>
+                </div>
+                <button 
+                  onClick={() => setBatchUpdateError(null)}
+                  className="ml-auto text-red-700 hover:text-red-900"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
+          
           {/* Controls and filters */}
           <div className="tienvios-card p-6 mb-8">
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
@@ -374,7 +434,38 @@ export default function IncidentsPage() {
                 </button>
               </div>
               
-              <div>
+              <div className="flex gap-2">
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setIsUploadModalOpen(true)}
+                    className="tienvios-button-secondary flex items-center"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    Cargar CSV
+                  </button>
+                  
+                  <button 
+                    onClick={handleExportToExcel}
+                    disabled={exportLoading || loading}
+                    className="tienvios-button-secondary flex items-center"
+                  >
+                    {exportLoading ? (
+                      <>
+                        <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-white mr-2"></div>
+                        Exportando...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Exportar a Excel
+                      </>
+                    )}
+                  </button>
+                </div>
                 <button className="tienvios-button">
                   Crear incidencia
                 </button>

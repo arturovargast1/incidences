@@ -107,6 +107,26 @@ export async function fetchIncidents(carrierId: number, page: number = 1, pageSi
  * Actualizar el estado de una incidencia
  */
 export async function updateIncident(updateData: any) {
+  return updateIncidentInternal(updateData);
+}
+
+/**
+ * Actualizar múltiples incidencias a la vez
+ */
+export async function updateMultipleIncidents(updateDataArray: any[]) {
+  console.log('Actualizando múltiples incidencias:', updateDataArray);
+  
+  // Usar el proxy API para evitar problemas de CORS
+  return fetchWithAuth('/incidence/update-multiple-incidences', {
+    method: 'POST',
+    body: JSON.stringify(updateDataArray)
+  });
+}
+
+/**
+ * Función interna para actualizar una incidencia (usada por updateIncident)
+ */
+async function updateIncidentInternal(updateData: any) {
   console.log('Datos de actualización enviados a la API:', updateData);
   
   // Copiar los datos para no modificar el objeto original
@@ -360,3 +380,12 @@ export const USER_ROLE_NAMES: Record<string, string> = {
   'standard': 'Estándar',
   'Master': 'Master'
 };
+
+/**
+ * Obtener la URL para descargar incidencias en Excel
+ */
+export async function downloadIncidentsExcel(carrierId: number = 1, page: number = 1, pageSize: number = 20) {
+  console.log(`Requesting Excel download for carrier: ${carrierId}, page: ${page}, pageSize: ${pageSize}`);
+  
+  return fetchWithAuth(`/incidence/download?mensajeria=${carrierId}&page=${page}&page_size=${pageSize}`);
+}
