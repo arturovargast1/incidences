@@ -1,0 +1,137 @@
+/* Estilos específicos para chips de estados */
+.status-finalized {
+  background-color: #c6f6d5 !important; /* Verde para Finalizado */
+  color: #22543d !important;
+  border-color: #9ae6b4 !important;
+}
+/* Estilos mejorados para el dashboard de incidencias */
+
+/* Estilo para los dropdowns del filtro */
+select option {
+  font-weight: 600 !important;
+  color: #1a202c !important;
+  padding: 8px 12px !important;
+  background-color: white !important;
+}
+
+/* Estilo para los títulos de estado en el progreso del flujo de trabajo */
+.flex.flex-col.items-center span {
+  margin-top: 8px !important;
+  letter-spacing: 0.01em !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.7) !important;
+}
+
+/* Mejora del tamaño de los números en los círculos del flujo de trabajo */
+.flex.items-center.justify-between .rounded-full {
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+}
+
+select {
+  font-weight: 500 !important;
+  color: #1a202c !important;
+}
+
+
+/* Mejoras generales de texto */
+.text-gray-500 {
+  color: #4a5568 !important; /* Gris más oscuro para mejor contraste */
+}
+
+.text-xs {
+  font-size: 0.875rem !important; /* Tamaño de letra más grande */
+  font-weight: 500 !important; /* Semi-bold para mejor legibilidad */
+}
+
+/* Mejoras específicas para los gráficos */
+.bg-white p {
+  color: #1a202c !important; /* Texto casi negro para máximo contraste */
+}
+
+/* Mejoras para el panel de distribución por tipo */
+.space-y-2 .bg-white {
+  border: 1px solid #e2e8f0 !important; /* Borde más definido */
+  padding: 0.75rem !important; /* Padding mayor */
+}
+
+.space-y-2 .bg-white p.text-sm {
+  font-weight: 600 !important; /* Negritas */
+  font-size: 0.9rem !important; /* Ligeramente más grande */
+  line-height: 1.4 !important; /* Mayor espaciado de línea */
+}
+
+/* Estilos para las etiquetas de estado (chips) - Versión más pequeña */
+.inline-flex.items-center {
+  padding: 0.2rem 0.5rem !important; /* Padding más pequeño */
+  font-weight: 500 !important; /* Menos negrita */
+  font-size: 0.7rem !important; /* Texto más pequeño */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important; /* Sombra más ligera */
+  border-width: 1px !important; /* Borde más fino */
+}
+
+/* Fondos más fuertes para los estados */
+.bg-red-100 {
+  background-color: #feb2b2 !important; /* Rojo más intenso */
+}
+
+.bg-yellow-100 {
+  background-color: #fefcbf !important; /* Amarillo más intenso */
+}
+
+.bg-blue-100 {
+  background-color: #bee3f8 !important; /* Azul más intenso */
+}
+
+.bg-green-100 {
+  background-color: #c6f6d5 !important; /* Verde más intenso */
+}
+
+/* Colores de texto más oscuros para los estados */
+.text-red-800 {
+  color: #822727 !important; /* Rojo más oscuro */
+}
+
+.text-yellow-800 {
+  color: #744210 !important; /* Amarillo más oscuro */
+}
+
+.text-blue-800 {
+  color: #2c5282 !important; /* Azul más oscuro */
+}
+
+.text-green-800 {
+  color: #22543d !important; /* Verde más oscuro */
+}
+
+/* Mejora de la barra de progreso */
+.bg-gray-200 {
+  background-color: #edf2f7 !important; /* Fondo más claro */
+  height: 0.5rem !important; /* Barra más alta */
+}
+
+.bg-[#db3b2a] {
+  height: 0.5rem !important; /* Barra más alta */
+}
+
+/* Estilos para barra de SLA */
+.barra-sla {
+  height: 0.75rem !important;
+  border-radius: 0.375rem !important;
+  background-color: #edf2f7 !important;
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.barra-sla > div {
+  height: 100% !important;
+  background-color: #22c55e !important; /* Verde brillante */
+  border-radius: 0.375rem !important;
+}
+
+/* Mejoras para los títulos de sección */
+h2.text-lg, h4.font-medium {
+  color: #1a202c !important; /* Color más oscuro */
+  font-weight: 700 !important; /* Más negrita */
+  margin-bottom: 1rem !important; /* Más espacio debajo */
+  text-shadow: 0 1px 0 rgba(255,255,255,0.7) !important; /* Sutil sombra de texto */
+}
