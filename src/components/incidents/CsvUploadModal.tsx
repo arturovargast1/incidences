@@ -139,7 +139,7 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, onError }: 
         </p>
         
         <div className="mb-4">
-          <label htmlFor="csvFile" className="block text-sm font-semibold text-[var(--gray-700)] mb-1">
+          <label htmlFor="csvFile" className="block text-sm font-semibold text-[var(--gray-700)] mb-2">
             Archivo CSV
           </label>
           <div className="relative">
@@ -149,23 +149,34 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, onError }: 
               ref={fileInputRef}
               accept=".csv"
               onChange={handleFileChange}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
             />
-            <div className="filter-control w-full flex items-center">
-              <span className="flex-grow truncate">
-                {fileName || 'Seleccionar archivo CSV...'}
-              </span>
-              <button className="tienvios-button-secondary text-sm ml-2 px-3 py-1">
+            <div className="filter-control w-full flex items-center border-dashed">
+              <div className="flex-grow flex items-center">
+                <svg className="w-5 h-5 text-gray-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span className="truncate text-sm">
+                  {fileName || 'Seleccionar archivo CSV...'}
+                </span>
+              </div>
+              <button className="tienvios-button-outline text-sm ml-2 px-3 py-1.5 flex items-center">
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13l-3 3m0 0l-3-3m3 3V8m0 13a9 9 0 110-18 9 9 0 010 18z" />
+                </svg>
                 Examinar
               </button>
             </div>
           </div>
-          <p className="text-xs text-[var(--gray-500)] mt-1">
+          <p className="text-xs text-[var(--gray-500)] mt-2 flex items-center">
+            <svg className="w-4 h-4 mr-1 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
             Formato: incident_id,status
           </p>
         </div>
         
-        <div className="flex justify-end gap-2 mt-6">
+        <div className="flex justify-end gap-3 mt-6">
           <button
             onClick={onClose}
             className="tienvios-button-secondary"
@@ -180,11 +191,19 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, onError }: 
           >
             {isUploading ? (
               <>
-                <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-white mr-2"></div>
+                <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
                 Procesando...
               </>
             ) : (
-              'Actualizar incidencias'
+              <>
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+                Actualizar incidencias
+              </>
             )}
           </button>
         </div>

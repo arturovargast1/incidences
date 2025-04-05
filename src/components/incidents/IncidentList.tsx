@@ -37,10 +37,10 @@ export default function IncidentList({
         
         <div className="flex space-x-2 overflow-x-auto pb-2">
           <button 
-            className={`px-3 py-1.5 text-xs font-medium rounded-md whitespace-nowrap ${
+            className={`px-3 py-2 text-xs font-medium rounded-lg whitespace-nowrap transition-all duration-200 ${
               filterType === 'all' 
-                ? 'bg-[var(--status-requires-action)] text-[var(--status-requires-action-text)]' 
-                : 'text-gray-700 hover:bg-gray-100'
+                ? 'bg-[var(--primary-light)] text-[var(--primary)] border border-[var(--primary)]' 
+                : 'text-gray-700 hover:bg-gray-100 border border-gray-200'
             }`}
             onClick={() => setFilterType('all')}
           >
@@ -50,10 +50,10 @@ export default function IncidentList({
           {Object.entries(INCIDENT_TYPE_NAMES).map(([type, name]) => (
             <button 
               key={type}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md whitespace-nowrap ${
+              className={`px-3 py-2 text-xs font-medium rounded-lg whitespace-nowrap transition-all duration-200 ${
                 filterType === type 
-                  ? 'bg-[var(--status-requires-action)] text-[var(--status-requires-action-text)]' 
-                  : 'text-gray-700 hover:bg-gray-100'
+                  ? 'bg-[var(--primary-light)] text-[var(--primary)] border border-[var(--primary)]' 
+                  : 'text-gray-700 hover:bg-gray-100 border border-gray-200'
               }`}
               onClick={() => setFilterType(type)}
             >
@@ -152,12 +152,15 @@ export default function IncidentList({
       {/* Pagination controls */}
       {totalPages > 1 && onPageChange && (
         <div className="p-4 border-t border-gray-200 flex justify-center">
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center space-x-2">
             <button
               onClick={() => onPageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              className="px-3 py-1.5 text-xs font-medium rounded-md text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-2 text-xs font-medium rounded-lg text-gray-700 hover:bg-gray-100 border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center"
             >
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+              </svg>
               Anterior
             </button>
             
@@ -177,10 +180,10 @@ export default function IncidentList({
                 <button
                   key={pageNum}
                   onClick={() => onPageChange(pageNum)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md ${
+                  className={`w-8 h-8 flex items-center justify-center text-xs font-medium rounded-lg transition-all duration-200 ${
                     currentPage === pageNum 
-                      ? 'bg-[var(--status-requires-action)] text-[var(--status-requires-action-text)]' 
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? 'bg-[var(--primary)] text-white' 
+                      : 'text-gray-700 hover:bg-gray-100 border border-gray-200'
                   }`}
                 >
                   {pageNum}
@@ -191,9 +194,12 @@ export default function IncidentList({
             <button
               onClick={() => onPageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="px-3 py-1.5 text-xs font-medium rounded-md text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-2 text-xs font-medium rounded-lg text-gray-700 hover:bg-gray-100 border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center"
             >
               Siguiente
+              <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+              </svg>
             </button>
           </div>
         </div>

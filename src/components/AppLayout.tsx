@@ -74,7 +74,7 @@ export default function AppLayout({ children, notificationCount = 0 }: AppLayout
     if (pathname === '/incidents') return 'Gestión de incidencias';
     if (pathname.startsWith('/incidents/')) return 'Detalle de incidencia';
     if (pathname === '/users') return 'Gestión de usuarios';
-    return 'Tienvíos';
+    return 'T1 Envíos';
   };
 
   return (
@@ -99,15 +99,15 @@ export default function AppLayout({ children, notificationCount = 0 }: AppLayout
           {/* Logo */}
           <div className="flex items-center justify-between p-5 border-b border-[var(--gray-200)]">
             <div className="flex items-center">
-              <div className="w-10 h-10 bg-gradient-to-br from-[var(--primary)] to-[var(--primary-dark)] rounded-lg flex items-center justify-center shadow-md">
-                <span className="text-white font-bold text-lg">T</span>
+              <div className="w-10 h-10 bg-gradient-to-br from-[var(--primary)] to-[var(--primary-dark)] rounded-xl flex items-center justify-center shadow-md">
+                <span className="text-white font-bold text-lg">T1</span>
               </div>
               {sidebarOpen && (
-                <span className="ml-3 text-[var(--gray-900)] font-semibold text-lg">Tienvíos</span>
+                <span className="ml-3 text-[var(--gray-900)] font-semibold text-lg tracking-tight">T1 Envíos</span>
               )}
             </div>
             <button 
-              className="text-[var(--gray-500)] hover:text-[var(--primary)] transition-colors duration-200 p-1 rounded-md hover:bg-[var(--gray-100)]"
+              className="text-[var(--gray-500)] hover:text-[var(--primary)] transition-colors duration-200 p-1.5 rounded-lg hover:bg-[var(--gray-100)]"
               onClick={() => setSidebarOpen(!sidebarOpen)}
               aria-label={sidebarOpen ? "Cerrar menú" : "Abrir menú"}
             >
@@ -129,23 +129,25 @@ export default function AppLayout({ children, notificationCount = 0 }: AppLayout
           <div className="flex-1 overflow-y-auto py-6">
             <div className="px-4 mb-6">
               {sidebarOpen && (
-                <h3 className="px-3 text-xs font-semibold text-[var(--gray-500)] uppercase tracking-wider mb-2">
+                <h3 className="px-3 text-xs font-semibold text-[var(--gray-500)] uppercase tracking-wider mb-3">
                   Principal
                 </h3>
               )}
-              <ul className="space-y-1">
+              <ul className="space-y-2">
                 <li>
                   <Link
                     href="/dashboard"
-                    className={`flex items-center w-full px-3 py-3 rounded-lg transition-all duration-200 ${
+                    className={`flex items-center w-full px-3 py-2.5 rounded-lg transition-all duration-200 ${
                       pathname === '/dashboard' 
                         ? 'bg-[var(--primary-light)] text-[var(--primary)]' 
                         : 'text-[var(--gray-700)] hover:bg-[var(--gray-100)]'
                     }`}
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                    </svg>
+                    <div className={`p-1.5 rounded-lg ${pathname === '/dashboard' ? 'bg-[var(--primary)] text-white' : 'bg-[var(--gray-100)] text-[var(--gray-600)]'}`}>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                      </svg>
+                    </div>
                     {sidebarOpen && <span className="ml-3 font-medium">Inicio</span>}
                     {pathname === '/dashboard' && (
                       <span className="absolute inset-y-0 left-0 w-1 bg-[var(--primary)] rounded-r-md"></span>
@@ -155,25 +157,29 @@ export default function AppLayout({ children, notificationCount = 0 }: AppLayout
                 <li>
                   <Link
                     href="/incidents"
-                    className={`flex items-center w-full px-3 py-3 rounded-lg transition-all duration-200 ${
+                    className={`flex items-center w-full px-3 py-2.5 rounded-lg transition-all duration-200 ${
                       pathname === '/incidents' || pathname.startsWith('/incidents/') 
                         ? 'bg-[var(--primary-light)] text-[var(--primary)]' 
                         : 'text-[var(--gray-700)] hover:bg-[var(--gray-100)]'
                     }`}
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
+                    <div className={`p-1.5 rounded-lg ${pathname === '/incidents' || pathname.startsWith('/incidents/') ? 'bg-[var(--primary)] text-white' : 'bg-[var(--gray-100)] text-[var(--gray-600)]'}`}>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                    </div>
                     {sidebarOpen && (
                       <div className="ml-3 flex-1 flex items-center justify-between">
                         <span className="font-medium">Incidencias</span>
-                        <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-[var(--primary)] rounded-full">
-                          {notificationCount}
-                        </span>
+                        {notificationCount > 0 && (
+                          <span className="inline-flex items-center justify-center w-6 h-6 text-xs font-bold leading-none text-white bg-[var(--primary)] rounded-full">
+                            {notificationCount}
+                          </span>
+                        )}
                       </div>
                     )}
                     {!sidebarOpen && notificationCount > 0 && (
-                      <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-[var(--primary)] rounded-full transform translate-x-1/2 -translate-y-1/2">
+                      <span className="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-xs font-bold leading-none text-white bg-[var(--primary)] rounded-full transform translate-x-1/2 -translate-y-1/2">
                         {notificationCount}
                       </span>
                     )}
@@ -185,11 +191,13 @@ export default function AppLayout({ children, notificationCount = 0 }: AppLayout
                 <li>
                   <Link
                     href="#"
-                    className="flex items-center w-full px-3 py-3 rounded-lg text-[var(--gray-700)] hover:bg-[var(--gray-100)] transition-all duration-200"
+                    className="flex items-center w-full px-3 py-2.5 rounded-lg text-[var(--gray-700)] hover:bg-[var(--gray-100)] transition-all duration-200"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
+                    <div className="p-1.5 rounded-lg bg-[var(--gray-100)] text-[var(--gray-600)]">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                    </div>
                     {sidebarOpen && <span className="ml-3 font-medium">Reportes</span>}
                   </Link>
                 </li>
@@ -198,34 +206,38 @@ export default function AppLayout({ children, notificationCount = 0 }: AppLayout
             
             {sidebarOpen && (
               <div className="px-4 mb-6">
-                <h3 className="px-3 text-xs font-semibold text-[var(--gray-500)] uppercase tracking-wider mb-2">
+                <h3 className="px-3 text-xs font-semibold text-[var(--gray-500)] uppercase tracking-wider mb-3">
                   Administración
                 </h3>
-                <ul className="space-y-1">
+                <ul className="space-y-2">
                   <li>
                     <Link
                       href="#"
-                      className="flex items-center w-full px-3 py-3 rounded-lg text-[var(--gray-700)] hover:bg-[var(--gray-100)] transition-all duration-200"
+                      className="flex items-center w-full px-3 py-2.5 rounded-lg text-[var(--gray-700)] hover:bg-[var(--gray-100)] transition-all duration-200"
                     >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
+                      <div className="p-1.5 rounded-lg bg-[var(--gray-100)] text-[var(--gray-600)]">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      </div>
                       <span className="ml-3 font-medium">Configuración</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/users"
-                      className={`flex items-center w-full px-3 py-3 rounded-lg transition-all duration-200 ${
+                      className={`flex items-center w-full px-3 py-2.5 rounded-lg transition-all duration-200 ${
                         pathname === '/users' 
                           ? 'bg-[var(--primary-light)] text-[var(--primary)]' 
                           : 'text-[var(--gray-700)] hover:bg-[var(--gray-100)]'
                       }`}
                     >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
+                      <div className={`p-1.5 rounded-lg ${pathname === '/users' ? 'bg-[var(--primary)] text-white' : 'bg-[var(--gray-100)] text-[var(--gray-600)]'}`}>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
                       <span className="ml-3 font-medium">Usuarios</span>
                       {pathname === '/users' && (
                         <span className="absolute inset-y-0 left-0 w-1 bg-[var(--primary)] rounded-r-md"></span>
@@ -240,22 +252,22 @@ export default function AppLayout({ children, notificationCount = 0 }: AppLayout
           {/* Footer del sidebar */}
           <div className="p-4 border-t border-[var(--gray-200)]">
             {sidebarOpen && (
-              <div className="mb-4 px-3 py-3 bg-[var(--gray-50)] rounded-lg">
+              <div className="mb-4 px-4 py-4 bg-[var(--primary-light)] rounded-xl">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary-dark)] flex items-center justify-center text-white font-medium shadow-sm">
+                    <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-[var(--primary)] to-[var(--primary-dark)] flex items-center justify-center text-white font-medium shadow-sm">
                       {loading ? '...' : getUserInitials()}
                     </div>
                   </div>
                   <div className="ml-3">
-                    <p className="text-sm font-medium text-[var(--gray-900)]">
+                    <p className="text-sm font-semibold text-[var(--gray-900)]">
                       {loading ? 'Cargando...' : user ? 
                         (user.first_name || user.last_name) ? 
                           `${user.first_name || ''} ${user.last_name || ''}`.trim() : 
                           user.email || 'Usuario' 
                         : 'Usuario'}
                     </p>
-                    <p className="text-xs text-[var(--gray-500)]">
+                    <p className="text-xs text-[var(--gray-600)]">
                       {loading ? '' : user?.email || 'Sin correo'}
                     </p>
                   </div>
@@ -264,11 +276,13 @@ export default function AppLayout({ children, notificationCount = 0 }: AppLayout
             )}
             <button
               onClick={handleLogout}
-              className="flex items-center w-full px-3 py-3 rounded-lg text-[var(--gray-700)] hover:bg-[var(--gray-100)] transition-all duration-200"
+              className="flex items-center w-full px-3 py-2.5 rounded-lg text-[var(--gray-700)] hover:bg-[var(--gray-100)] transition-all duration-200"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
+              <div className="p-1.5 rounded-lg bg-[var(--gray-100)] text-[var(--gray-600)]">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+              </div>
               {sidebarOpen && <span className="ml-3 font-medium">Cerrar sesión</span>}
             </button>
           </div>
@@ -283,7 +297,7 @@ export default function AppLayout({ children, notificationCount = 0 }: AppLayout
             <div className="flex items-center">
               {isMobile && (
                 <button 
-                  className="mr-4 text-[var(--gray-500)] hover:text-[var(--primary)] transition-colors duration-200"
+                  className="mr-4 text-[var(--gray-500)] hover:text-[var(--primary)] transition-colors duration-200 p-1.5 rounded-lg hover:bg-[var(--gray-100)]"
                   onClick={() => setSidebarOpen(!sidebarOpen)}
                   aria-label={sidebarOpen ? "Cerrar menú" : "Abrir menú"}
                 >
@@ -297,35 +311,45 @@ export default function AppLayout({ children, notificationCount = 0 }: AppLayout
               
               <div className="breadcrumbs hidden md:flex">
                 <div className="breadcrumbs-item">
-                  <Link href="/dashboard">Tienvíos</Link>
+                  <Link href="/dashboard" className="text-[var(--primary)] hover:text-[var(--primary-dark)] transition-colors">T1 Envíos</Link>
                 </div>
                 <div className="breadcrumbs-item">
                   {getPageTitle()}
                 </div>
               </div>
               
-              <h1 className="text-xl font-bold text-[var(--gray-900)] md:hidden">
+              <h1 className="text-xl font-bold text-[var(--gray-900)] tracking-tight md:hidden">
                 {getPageTitle()}
               </h1>
             </div>
             
             <div className="flex items-center space-x-4">
+              {/* Botón de ayuda 
+              <button className="tienvios-button-outline tienvios-button-sm hidden md:flex items-center">
+                <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Ayuda</span>
+              </button>*/}
+              
               {/* Notificaciones */}
-              <button className="relative p-1 text-[var(--gray-500)] hover:text-[var(--primary)] transition-colors duration-200 rounded-full hover:bg-[var(--gray-100)]">
+              <button className="relative p-2 text-[var(--gray-500)] hover:text-[var(--primary)] transition-colors duration-200 rounded-lg hover:bg-[var(--gray-100)]">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
-                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-[var(--primary)] rounded-full transform translate-x-1/2 -translate-y-1/2">
-                  {notificationCount}
-                </span>
+                {notificationCount > 0 && (
+                  <span className="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-xs font-bold leading-none text-white bg-[var(--primary)] rounded-full transform translate-x-1/2 -translate-y-1/2">
+                    {notificationCount}
+                  </span>
+                )}
               </button>
               
               {/* Perfil de usuario */}
               <div className="relative">
-                <button className="flex items-center focus:outline-none">
+                <button className="flex items-center focus:outline-none p-1 rounded-lg hover:bg-[var(--gray-100)] transition-colors duration-200">
                   <div className="relative">
-                    <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-green-400 ring-2 ring-white"></span>
-                    <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary-dark)] flex items-center justify-center text-white font-medium shadow-sm">
+                    <span className="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-white"></span>
+                    <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-[var(--primary)] to-[var(--primary-dark)] flex items-center justify-center text-white font-medium shadow-sm">
                       {loading ? '...' : getUserInitials()}
                     </div>
                   </div>

@@ -81,25 +81,32 @@ export default function Dashboard() {
           </div>
           
           {/* Selector de paquetería y botón de actualización */}
-          <div className="tienvios-card p-6 mb-8">
+          <div className="tienvios-card p-6 mb-8 border border-[var(--gray-200)]">
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-              <div className="w-full md:w-64">
-                <label htmlFor="carrier" className="block text-sm font-semibold text-[var(--gray-700)] mb-1">
+              <div className="w-full md:w-72">
+                <label htmlFor="carrier" className="block text-sm font-semibold text-[var(--gray-700)] mb-2">
                   Selecciona una paquetería
                 </label>
-                <select
-                  id="carrier"
-                  value={selectedCarrier}
-                  onChange={(e) => setSelectedCarrier(Number(e.target.value))}
-                  className="filter-control w-full"
-                >
-                  <option value="0">Todas las paqueterías</option>
-                  {Object.entries(CARRIER_NAMES).map(([id, name]) => (
-                    <option key={id} value={id}>
-                      {name}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-2m-4-1v8m0 0l-4-4m4 4l4-4" />
+                    </svg>
+                  </div>
+                  <select
+                    id="carrier"
+                    value={selectedCarrier}
+                    onChange={(e) => setSelectedCarrier(Number(e.target.value))}
+                    className="filter-control w-full pl-10"
+                  >
+                    <option value="0">Todas las paqueterías</option>
+                    {Object.entries(CARRIER_NAMES).map(([id, name]) => (
+                      <option key={id} value={id}>
+                        {name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
               
               <button
@@ -109,7 +116,7 @@ export default function Dashboard() {
               >
                 {loading ? (
                   <span className="flex items-center">
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
@@ -117,7 +124,7 @@ export default function Dashboard() {
                   </span>
                 ) : (
                   <>
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
                     <span>Actualizar datos</span>
@@ -129,33 +136,35 @@ export default function Dashboard() {
           
           {/* KPIs principales */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="tienvios-card p-6 hover:shadow-md transition-shadow duration-300">
+            <div className="tienvios-card p-6 hover:shadow-lg transition-all duration-300 border border-[var(--gray-200)]">
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-sm font-semibold text-[var(--gray-600)] uppercase tracking-wider">Total Incidencias</h3>
-                  <p className="text-3xl font-bold text-[var(--gray-900)] mt-2">{stats.totalIncidents}</p>
+                  <p className="text-3xl font-bold text-[var(--gray-900)] mt-2 tracking-tight">{stats.totalIncidents}</p>
                 </div>
-                <div className="p-3 rounded-full bg-[var(--primary-light)]">
+                <div className="p-3 rounded-xl bg-[var(--primary-light)]">
                   <svg className="w-6 h-6 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                 </div>
               </div>
               <div className="flex items-center mt-4 text-red-500">
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
+                <div className="flex items-center justify-center w-5 h-5 rounded-full bg-red-100 mr-2">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                </div>
                 <span className="text-xs font-medium">0.6% vs. periodo anterior</span>
               </div>
             </div>
             
-            <div className="tienvios-card p-6 hover:shadow-md transition-shadow duration-300">
+            <div className="tienvios-card p-6 hover:shadow-lg transition-all duration-300 border border-[var(--gray-200)]">
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-sm font-semibold text-[var(--gray-600)] uppercase tracking-wider">Fuera de Tiempo</h3>
-                  <p className="text-3xl font-bold text-[var(--gray-900)] mt-2">{Math.round(totalRecords * (1 - parseFloat(stats.slaCompliance) / 100))}</p>
+                  <p className="text-3xl font-bold text-[var(--gray-900)] mt-2 tracking-tight">{Math.round(totalRecords * (1 - parseFloat(stats.slaCompliance) / 100))}</p>
                 </div>
-                <div className="p-3 rounded-full bg-red-100">
+                <div className="p-3 rounded-xl bg-red-100">
                   <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
@@ -166,51 +175,55 @@ export default function Dashboard() {
                   <span className="text-xs font-medium text-[var(--gray-600)]">SLA incumplido</span>
                   <span className="text-xs font-semibold text-red-600">{(100 - parseFloat(stats.slaCompliance)).toFixed(1)}%</span>
                 </div>
-                <div className="w-full bg-[var(--gray-200)] rounded-full h-1.5">
+                <div className="w-full bg-[var(--gray-200)] rounded-full h-2 shadow-inner">
                   <div 
-                    className="bg-red-500 h-1.5 rounded-full" 
+                    className="bg-red-500 h-2 rounded-full" 
                     style={{ width: `${(100 - parseFloat(stats.slaCompliance)).toFixed(1)}%` }}
                   ></div>
                 </div>
               </div>
             </div>
             
-            <div className="tienvios-card p-6 hover:shadow-md transition-shadow duration-300">
+            <div className="tienvios-card p-6 hover:shadow-lg transition-all duration-300 border border-[var(--gray-200)]">
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-sm font-semibold text-[var(--gray-600)] uppercase tracking-wider">Primera Acción</h3>
-                  <p className="text-3xl font-bold text-[var(--gray-900)] mt-2">8.5 hrs</p>
+                  <p className="text-3xl font-bold text-[var(--gray-900)] mt-2 tracking-tight">8.5 hrs</p>
                 </div>
-                <div className="p-3 rounded-full bg-blue-100">
-                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="p-3 rounded-xl bg-[var(--primary-light)]">
+                  <svg className="w-6 h-6 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
               </div>
               <div className="flex items-center mt-4 text-green-500">
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
-                </svg>
+                <div className="flex items-center justify-center w-5 h-5 rounded-full bg-green-100 mr-2">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+                  </svg>
+                </div>
                 <span className="text-xs font-medium">1.2% vs. periodo anterior</span>
               </div>
             </div>
             
-            <div className="tienvios-card p-6 hover:shadow-md transition-shadow duration-300">
+            <div className="tienvios-card p-6 hover:shadow-lg transition-all duration-300 border border-[var(--gray-200)]">
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-sm font-semibold text-[var(--gray-600)] uppercase tracking-wider">Tiempo Resolución</h3>
-                  <p className="text-3xl font-bold text-[var(--gray-900)] mt-2">{stats.averageTime}</p>
+                  <p className="text-3xl font-bold text-[var(--gray-900)] mt-2 tracking-tight">{stats.averageTime}</p>
                 </div>
-                <div className="p-3 rounded-full bg-green-100">
+                <div className="p-3 rounded-xl bg-green-100">
                   <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
               </div>
               <div className="flex items-center mt-4 text-green-500">
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
-                </svg>
+                <div className="flex items-center justify-center w-5 h-5 rounded-full bg-green-100 mr-2">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+                  </svg>
+                </div>
                 <span className="text-xs font-medium">0.9% vs. periodo anterior</span>
               </div>
             </div>
@@ -252,11 +265,18 @@ export default function Dashboard() {
                     {incidents.slice(0, 6).map((incident) => (
                       <div 
                         key={incident.incidentId} 
-                        className="p-4 bg-[var(--gray-50)] border border-[var(--gray-200)] rounded-lg flex justify-between items-center hover:shadow-md transition-all duration-300 cursor-pointer"
+                        className="p-4 bg-white border border-[var(--gray-200)] rounded-lg flex justify-between items-center hover:shadow-md transition-all duration-300 cursor-pointer"
                       >
-                        <div>
-                          <p className="text-sm font-bold text-[var(--gray-900)]">{incident.incidentId}</p>
-                          <p className="text-xs text-[var(--gray-600)]">{INCIDENT_TYPE_NAMES[incident.type as keyof typeof INCIDENT_TYPE_NAMES]}</p>
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 rounded-lg bg-[var(--primary-light)] flex items-center justify-center text-[var(--primary)] mr-3">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-[var(--gray-900)]">{incident.incidentId}</p>
+                            <p className="text-xs text-[var(--gray-600)]">{INCIDENT_TYPE_NAMES[incident.type as keyof typeof INCIDENT_TYPE_NAMES]}</p>
+                          </div>
                         </div>
                         <div className="flex items-center">
                           <span className={`status-tag ${
@@ -306,17 +326,24 @@ export default function Dashboard() {
                       const count = incidents.filter(inc => inc.type === type).length;
                       const percentage = incidents.length > 0 ? Math.round((count / incidents.length) * 100) : 0;
                       return (
-                        <div key={type} className="p-4 bg-[var(--gray-50)] border border-[var(--gray-200)] rounded-lg">
-                          <div className="flex justify-between items-center mb-2">
-                            <p className="text-sm font-bold text-[var(--gray-900)]">{name}</p>
+                        <div key={type} className="p-4 bg-white border border-[var(--gray-200)] rounded-lg hover:shadow-sm transition-all duration-300">
+                          <div className="flex justify-between items-center mb-3">
                             <div className="flex items-center">
-                              <span className="text-sm font-bold text-[var(--gray-900)]">{count}</span>
+                              <div className="w-8 h-8 rounded-lg bg-[var(--primary-light)] flex items-center justify-center text-[var(--primary)] mr-3">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                </svg>
+                              </div>
+                              <p className="text-sm font-bold text-[var(--gray-900)]">{name}</p>
+                            </div>
+                            <div className="flex items-center">
+                              <span className="text-sm font-bold text-[var(--primary)]">{count}</span>
                               <span className="ml-1 text-xs font-medium text-[var(--gray-600)]">({percentage}%)</span>
                             </div>
                           </div>
-                          <div className="w-full bg-[var(--gray-200)] rounded-full h-2 overflow-hidden">
+                          <div className="w-full bg-[var(--gray-100)] rounded-full h-2.5 overflow-hidden shadow-inner">
                             <div 
-                              className="bg-[var(--primary)] h-2 rounded-full transition-all duration-500" 
+                              className="bg-[var(--primary)] h-2.5 rounded-full transition-all duration-500" 
                               style={{ width: `${percentage}%` }}
                             ></div>
                           </div>

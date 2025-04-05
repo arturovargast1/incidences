@@ -34,66 +34,118 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md space-y-8 p-8 bg-white rounded-lg shadow-md">
-        <div className="text-center">
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">T1envíos</h2>
-          <p className="mt-2 text-center text-gray-600">
-            Plataforma de gestión de incidencias
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="w-full max-w-md p-8 bg-white rounded-xl shadow-xl border border-gray-200 animate-fade-in">
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-6">
+            <img 
+              src="/T1envios_logo.webp" 
+              alt="T1 Envíos Logo" 
+              className="h-12 transform hover:scale-105 transition-transform duration-300"
+            />
+          </div>
+          <p className="mt-2 text-gray-600">
+            Plataforma de gestión de incidencias para equipos de operación
           </p>
         </div>
         
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form className="space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="rounded-md bg-red-50 p-4 text-sm text-red-700">
-              {error}
+            <div className="rounded-lg bg-red-50 p-4 text-sm text-red-700 border border-red-200 flex items-start animate-fade-in">
+              <svg className="w-5 h-5 mr-2 flex-shrink-0 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>{error}</span>
             </div>
           )}
           
-          <div className="space-y-4 rounded-md shadow-sm">
+          <div className="space-y-5">
             <div>
-              <label htmlFor="email" className="block text-sm font-bold text-gray-800">
+              <label htmlFor="email" className="block text-sm font-semibold text-gray-800 mb-1.5">
                 Correo electrónico
               </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#db3b2a] focus:outline-none focus:ring-[#db3b2a] text-gray-900 font-medium"
-                placeholder="Correo electrónico"
-              />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                  </svg>
+                </div>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10 block w-full rounded-lg border border-gray-300 px-3 py-3 shadow-sm focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-light)] text-gray-900 font-medium transition-all duration-200"
+                  placeholder="nombre@empresa.com"
+                />
+              </div>
             </div>
             
             <div>
-              <label htmlFor="password" className="block text-sm font-bold text-gray-800">
-                Contraseña
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#db3b2a] focus:outline-none focus:ring-[#db3b2a] text-gray-900 font-medium"
-                placeholder="Contraseña"
-              />
+              <div className="flex items-center justify-between mb-1.5">
+                <label htmlFor="password" className="block text-sm font-semibold text-gray-800">
+                  Contraseña
+                </label>
+                <a href="#" className="text-sm font-medium text-[var(--primary)] hover:text-[var(--primary-dark)] transition-colors">
+                  ¿Olvidaste tu contraseña?
+                </a>
+              </div>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10 block w-full rounded-lg border border-gray-300 px-3 py-3 shadow-sm focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-light)] text-gray-900 font-medium transition-all duration-200"
+                  placeholder="••••••••"
+                />
+              </div>
             </div>
           </div>
 
-          <div>
+          <div className="pt-4">
             <button
               type="submit"
               disabled={loading}
-              className="group relative flex w-full justify-center rounded-md border border-transparent bg-[#db3b2a] px-4 py-2 text-sm font-medium text-white hover:bg-[#c53525] focus:outline-none focus:ring-2 focus:ring-[#db3b2a] focus:ring-offset-2 disabled:bg-[#e57373]"
+              className="tienvios-button tienvios-button-lg w-full flex items-center justify-center py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
             >
-              {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+              {loading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Iniciando sesión...
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                  </svg>
+                  Iniciar sesión
+                </>
+              )}
             </button>
           </div>
         </form>
+        
+        <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-600">
+          <p className="flex items-center justify-center">
+            <svg className="w-4 h-4 mr-1 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            © 2025 T1envíos. Todos los derechos reservados.
+          </p>
+        </div>
       </div>
     </div>
   );
