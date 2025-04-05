@@ -39,7 +39,7 @@ export default function Login() {
         <div className="text-center mb-8">
           <div className="flex justify-center mb-6">
             <img 
-              src="/t1envios_logo.webp" 
+              src="/t1envios_logo_.webp" 
               alt="T1 Envíos Logo" 
               className="h-12 transform hover:scale-105 transition-transform duration-300"
             />
