@@ -44,6 +44,7 @@ export default function Login() {
               className="h-12 transform hover:scale-105 transition-transform duration-300"
             />
           </div>
+          <h1 className="text-2xl font-bold text-gray-800">Incidencias T1 Envíos</h1>
           <p className="mt-2 text-gray-600">
             Plataforma de gestión de incidencias para equipos de operación
           </p>
@@ -143,7 +144,7 @@ export default function Login() {
             <svg className="w-4 h-4 mr-1 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
-            © 2025 T1envíos. Todos los derechos reservados.
+            © 2025 Incidencias T1 Envíos. Todos los derechos reservados.
           </p>
         </div>
       </div>
