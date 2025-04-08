@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Incident } from '../../types/incidents';
-import { INCIDENT_TYPE_NAMES, INCIDENT_STATUS_NAMES, calculateRemainingTime } from '../../lib/api';
+import { INCIDENT_TYPE_NAMES, INCIDENT_STATUS_NAMES, calculateRemainingTime, calculateRemainingDays } from '../../lib/api';
 
 interface IncidentListProps {
   incidents: Incident[];
@@ -121,8 +121,8 @@ export default function IncidentList({
                           remainingTime <= 8 ? 'text-yellow-700' : 'text-green-700'
                         }`}>
                           {remainingTime <= 0 ? 
-                            `¡Vencido hace ${Math.abs(remainingTime)}h!` : 
-                            `${remainingTime}h restantes`
+                            `¡Vencido hace ${Math.abs(calculateRemainingDays(incident.deadline))} días!` : 
+                            `${calculateRemainingDays(incident.deadline)} días restantes`
                           }
                         </span>
                         <span className={`ml-2 sla-tag sla-tag-sm ${

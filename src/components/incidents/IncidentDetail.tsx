@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Incident } from '../../types/incidents';
-import { INCIDENT_STATUS_NAMES, INCIDENT_TYPE_NAMES, formatDate } from '../../lib/api';
+import { INCIDENT_STATUS_NAMES, INCIDENT_TYPE_NAMES, formatDate, calculateRemainingDays } from '../../lib/api';
 import PhotoGallery from './PhotoGallery';
 
 // Mapa de traducciones para los campos comunes
@@ -257,6 +257,7 @@ export default function IncidentDetail({ incident, onStatusChange }: IncidentDet
   
   // Obtener datos del SLA directamente de la incidencia
   const hoursRemaining = incident.slaHours || incident.metadata?.resolutionTime || 52;
+  const daysRemaining = incident.deadline ? calculateRemainingDays(incident.deadline) : Math.ceil(hoursRemaining / 24);
   const timePercentage = Math.min(100, (hoursRemaining / 52) * 100);
   
   // Formatear la fecha límite si está disponible, o usar el valor directo
@@ -426,7 +427,7 @@ export default function IncidentDetail({ incident, onStatusChange }: IncidentDet
           <div className="mt-4 md:mt-0 w-full md:w-auto md:min-w-[200px]">
             <div className="flex justify-between items-center mb-1">
               <div className="text-sm font-bold text-gray-900">
-                SLA: {hoursRemaining} horas
+                SLA: {daysRemaining} días
                 <span className={`ml-2 sla-tag ${
                   hoursRemaining <= 0 ? 'sla-expired' : 
                   hoursRemaining <= 8 ? 'sla-warning' : 

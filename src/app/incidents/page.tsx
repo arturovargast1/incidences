@@ -13,9 +13,13 @@ import {
   fetchIncidenceStats,
   downloadIncidentsExcel,
   IncidenceStatsResponse,
-  CourierStats
+  CourierStats,
+  calculateRemainingDays
 } from '../../lib/api';
 import CsvUploadModal from '../../components/incidents/CsvUploadModal';
+import IncidenceRateCard from '../../components/dashboard/IncidenceRateCard';
+import CourierPerformanceCard from '../../components/dashboard/CourierPerformanceCard';
+import SingleCourierCard from '../../components/dashboard/SingleCourierCard';
 import { Incident } from '../../types/incidents';
 
 export default function IncidentsPage() {
@@ -102,8 +106,7 @@ export default function IncidentsPage() {
       requires_action: 0,
       pending: 0,
       in_process: 0,
-      finalized: 0,
-      in_review: 0
+      finalized: 0
     };
     
     // Calculate SLA counts
@@ -241,6 +244,7 @@ export default function IncidentsPage() {
     return 48; // Default SLA hours if not specified
   };
   
+  
   // Check if SLA is expired
   const isSLAExpired = (incident: Incident): boolean => {
     return getSLAHours(incident) <= 0;
@@ -307,68 +311,9 @@ export default function IncidentsPage() {
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-[var(--gray-900)] mb-2">Gestión de incidencias</h1>
-            <p className="text-[var(--gray-600)]">Algunas entregas requieren ajustes. Gestiona aquí las incidencias reportadas por la paquetería y mantén el control de tus envíos.</p>
           </div>
           
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            {/* Incident rate */}
-            <div className="tienvios-card p-6">
-              <h3 className="text-base font-bold text-[var(--gray-800)] mb-3">Tasa de incidencias</h3>
-              {loadingStats ? (
-                <div className="h-32 flex items-center justify-center">
-                  <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[var(--primary)]"></div>
-                </div>
-              ) : !incidenceStats ? (
-                <div className="h-32 flex items-center justify-center text-red-500">
-                  <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span>Error al cargar estadísticas</span>
-                </div>
-              ) : (
-                <>
-                  <div className="flex items-baseline">
-                    <span className="text-4xl font-bold text-[var(--gray-900)]">
-                      {(incidenceStats.detail.overall_percentaje * 100).toFixed(2)}%
-                    </span>
-                    <span className="ml-2 text-sm font-medium text-red-500">-0.2%</span>
-                  </div>
-                  <p className="text-sm text-[var(--gray-600)] mt-2">
-                    {incidenceStats.detail.couriers.reduce((sum, courier) => sum + courier.total_de_incidencias, 0)} / {incidenceStats.detail.total_of_guides} envíos
-                  </p>
-                  
-                  <div className="mt-4 w-full bg-[var(--gray-200)] rounded-full h-2 shadow-inner overflow-hidden">
-                    <div 
-                      className="bg-[var(--primary)] h-2 rounded-full transition-all duration-1000 ease-out" 
-                      style={{ width: `${incidenceStats.detail.overall_percentaje * 100}%` }}
-                    ></div>
-                  </div>
-                </>
-              )}
-            </div>
-            
-            {/* Carrier performance */}
-            <div className="tienvios-card p-6">
-              <h3 className="text-base font-bold text-[var(--gray-800)] mb-3">Desempeño por paquetería</h3>
-              {loadingStats ? (
-                <div className="h-32 flex items-center justify-center">
-                  <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[var(--primary)]"></div>
-                </div>
-              ) : !incidenceStats ? (
-                <div className="h-32 flex items-center justify-center text-red-500">
-                  <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span>Error al cargar estadísticas</span>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-4">
-                  {renderCarrierCards()}
-                </div>
-              )}
-            </div>
-          </div>
+          {/* Stats section removed as requested */}
           
           {/* CSV Upload Modal */}
           <CsvUploadModal 
@@ -435,42 +380,37 @@ export default function IncidentsPage() {
               </div>
               
               <div className="flex gap-2">
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => setIsUploadModalOpen(true)}
-                    className="tienvios-button-outline flex items-center rounded-xl"
-                  >
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19.5V14m0 0l-3 3m3-3l3 3" />
-                    </svg>
-                    Cargar CSV
-                  </button>
-                  
-                  <button 
-                    onClick={handleExportToExcel}
-                    disabled={exportLoading || loading}
-                    className="tienvios-button-outline flex items-center rounded-xl"
-                  >
-                    {exportLoading ? (
-                      <>
-                        <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-[var(--primary)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Exportando...
-                      </>
-                    ) : (
-                      <>
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        Exportar a Excel
-                      </>
-                    )}
-                  </button>
-                </div>
-                <button className="tienvios-button rounded-xl">
-                  Crear incidencia
+                <button 
+                  onClick={() => setIsUploadModalOpen(true)}
+                  className="tienvios-button-outline tienvios-button-lg flex items-center rounded-xl px-4 py-2.5"
+                >
+                  <svg className="w-5 h-5 mr-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19.5V14m0 0l-3 3m3-3l3 3" />
+                  </svg>
+                  Cargar CSV
+                </button>
+                
+                <button 
+                  onClick={handleExportToExcel}
+                  disabled={exportLoading || loading}
+                  className="tienvios-button-outline tienvios-button-lg flex items-center rounded-xl px-4 py-2.5"
+                >
+                  {exportLoading ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-[var(--primary)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Exportando...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5 mr-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      Exportar a Excel
+                    </>
+                  )}
                 </button>
               </div>
             </div>
@@ -555,7 +495,7 @@ export default function IncidentsPage() {
               <h2 className="text-lg font-bold text-[var(--gray-900)]">Incidencias</h2>
               <p className="text-sm text-[var(--gray-600)]">{filteredIncidents.length} incidencias encontradas de {totalRecords} en total</p>
               
-              {/* Status summary */}
+              {/* Status and SLA summary */}
               <div className="mt-4 flex flex-wrap gap-2">
                 <div 
                   className="status-tag status-requires-action cursor-pointer hover:opacity-90"
@@ -581,28 +521,23 @@ export default function IncidentsPage() {
                 >
                   Finalizada: {statusCounts.finalized || 0}
                 </div>
-                <div 
-                  className="status-tag status-in-review cursor-pointer hover:opacity-90"
-                  onClick={() => setStatusFilter(statusFilter === 'in_review' ? 'all' : 'in_review')}
-                >
-                  En revisión: {statusCounts.in_review || 0}
+                
+                {/* SLA filters */}
+                <div className="ml-4 border-l border-gray-300 pl-4">
+                  <div 
+                    className="sla-tag sla-in-time cursor-pointer hover:opacity-90"
+                    onClick={() => setSlaFilter(slaFilter === 'in_time' ? 'all' : 'in_time')}
+                  >
+                    En tiempo: {slaCounts.inTime || 0}
+                  </div>
                 </div>
-              </div>
-              
-              {/* SLA summary */}
-              <div className="mt-4 flex flex-wrap gap-2">
-                <h3 className="w-full text-sm font-semibold text-[var(--gray-700)] mb-1">Estado de SLA:</h3>
-                <div 
-                  className="sla-tag sla-in-time cursor-pointer hover:opacity-90"
-                  onClick={() => setSlaFilter(slaFilter === 'in_time' ? 'all' : 'in_time')}
-                >
-                  En tiempo: {slaCounts.inTime || 0}
-                </div>
-                <div 
-                  className="sla-tag sla-expired cursor-pointer hover:opacity-90"
-                  onClick={() => setSlaFilter(slaFilter === 'expired' ? 'all' : 'expired')}
-                >
-                  Vencido: {slaCounts.expired || 0}
+                <div>
+                  <div 
+                    className="sla-tag sla-expired cursor-pointer hover:opacity-90"
+                    onClick={() => setSlaFilter(slaFilter === 'expired' ? 'all' : 'expired')}
+                  >
+                    Vencido: {slaCounts.expired || 0}
+                  </div>
                 </div>
               </div>
             </div>
@@ -684,9 +619,6 @@ export default function IncidentsPage() {
                             {incident.status_mensajeria === 'pending' && (
                               <span className="status-tag status-pending">Pendiente</span>
                             )}
-                            {incident.status_mensajeria === 'in_review' && (
-                              <span className="status-tag status-in-review">En revisión</span>
-                            )}
                           </td>
                           <td>
                             <span className={`sla-tag ${slaHours <= 0 ? 'sla-expired' : slaHours <= 8 ? 'sla-warning' : 'sla-in-time'}`}>
@@ -696,8 +628,8 @@ export default function IncidentsPage() {
                           <td>
                             <span className={`font-medium ${slaHours <= 0 ? 'text-red-600' : 'text-green-600'}`}>
                               {slaHours <= 0 
-                                ? `${Math.abs(slaHours).toFixed(2)} hrs` 
-                                : `${slaHours.toFixed(2)} hrs`}
+                                ? `${Math.abs(calculateRemainingDays(incident.deadline))} días` 
+                                : `${calculateRemainingDays(incident.deadline)} días`}
                             </span>
                           </td>
                           <td>

@@ -89,18 +89,22 @@ async function fetchWithAuth(endpoint: string, options: RequestInit = {}, retryC
  * Obtener el tablero de incidencias con paginación
  */
 export async function fetchIncidents(carrierId: number, page: number = 1, pageSize: number = 10) {
-  // Si carrierId es 0 (opción "Todos"), usamos un valor predeterminado (DHL = 1)
-  // Esto es temporal hasta que el backend soporte una opción para "todos"
-  const effectiveCarrierId = carrierId === 0 ? 1 : carrierId;
-  
   // Asegurarse de que los parámetros de paginación sean números válidos
   const validPage = Math.max(1, page);
   const validPageSize = Math.max(1, pageSize);
   
-  console.log(`Fetching incidents with pagination - Carrier: ${effectiveCarrierId}, Page: ${validPage}, PageSize: ${validPageSize}`);
+  // Construir la URL base
+  let url = `/incidence/dashboard?page=${validPage}&page_size=${validPageSize}`;
+  
+  // Añadir el parámetro de mensajería solo si no es 0 (Todas las paqueterías)
+  if (carrierId !== 0) {
+    url += `&mensajeria=${carrierId}`;
+  }
+  
+  console.log(`Fetching incidents with pagination - URL: ${url}`);
   
   // Usar los nombres de parámetros exactos que espera el backend
-  return fetchWithAuth(`/incidence/dashboard?mensajeria=${effectiveCarrierId}&page=${validPage}&page_size=${validPageSize}`);
+  return fetchWithAuth(url);
 }
 
 /**
@@ -116,10 +120,66 @@ export async function updateIncident(updateData: any) {
 export async function updateMultipleIncidents(updateDataArray: any[]) {
   console.log('Actualizando múltiples incidencias:', updateDataArray);
   
+  // Procesar cada elemento del array usando la misma lógica que updateIncidentInternal
+  const processedDataArray = updateDataArray.map(updateData => {
+    // Copiar los datos para no modificar el objeto original
+    const dataToSend: any = { ...updateData };
+    
+    // Convertir propiedades de camelCase a snake_case para la API
+    if (dataToSend.incidentId && !dataToSend.incident_id) {
+      dataToSend.incident_id = dataToSend.incidentId;
+      delete dataToSend.incidentId;
+    }
+    
+    // Asegurarse de que el formato es correcto para la API
+    // Si recibimos status_mensajeria, convertirlo a status (formato que espera la API)
+    if (dataToSend.status_mensajeria && !dataToSend.status) {
+      dataToSend.status = dataToSend.status_mensajeria;
+      delete dataToSend.status_mensajeria; // Eliminar para usar solo status
+    }
+    
+    // Asegurarse de que status sea uno de los valores válidos (no un string con formato)
+    if (dataToSend.status && dataToSend.status.includes('=')) {
+      const parts = dataToSend.status.split('=');
+      if (parts.length === 2) {
+        dataToSend.status = parts[1];
+      }
+    }
+    
+    // Si hay datos de address_change que vienen como objeto anidado, ajustar el formato
+    if (dataToSend.actionType === 'address_change' && !dataToSend.address_change) {
+      // Buscar si hay datos de address_change en otro formato
+      const addressChangeKey = Object.keys(dataToSend).find(key => key === 'address_change' || dataToSend[key]?.city);
+      
+      if (addressChangeKey && typeof dataToSend[addressChangeKey] === 'object') {
+        dataToSend.address_change = dataToSend[addressChangeKey];
+        
+        // Si el key no era 'address_change', eliminar la propiedad original
+        if (addressChangeKey !== 'address_change') {
+          delete dataToSend[addressChangeKey];
+        }
+      } else {
+        // Si no encontramos datos de address_change pero es requerido, agregar datos mínimos
+        dataToSend.address_change = {
+          city: "Queretaro"
+        };
+      }
+    }
+    
+    // Asegurarse de que hay notas
+    if (!dataToSend.notes) {
+      dataToSend.notes = `La mensajeria revisa la incidencia`;
+    }
+    
+    return dataToSend;
+  });
+  
+  console.log('Datos finales enviados a la API:', processedDataArray);
+  
   // Usar el proxy API para evitar problemas de CORS
   return fetchWithAuth('/incidence/update-multiple-incidences', {
     method: 'POST',
-    body: JSON.stringify(updateDataArray)
+    body: JSON.stringify(processedDataArray)
   });
 }
 
@@ -201,8 +261,15 @@ export async function fetchIncidentDetails(incidentId: string) {
 /**
  * Obtener estadísticas de incidencias para el dashboard
  */
-export async function fetchIncidenceStats() {
-  return fetchWithAuth('/incidence/cardsadmin');
+export async function fetchIncidenceStats(carrierId?: number) {
+  let url = '/incidence/cardsadmin';
+  
+  // Añadir el parámetro de mensajería solo si se proporciona y no es 0 (Todas las paqueterías)
+  if (carrierId && carrierId !== 0) {
+    url += `?mensajeria=${carrierId}`;
+  }
+  
+  return fetchWithAuth(url);
 }
 
 /**
@@ -331,6 +398,24 @@ export function calculateRemainingTime(deadline: string): number {
 }
 
 /**
+ * Calcula el tiempo restante hasta el deadline en días, siempre redondeando hacia arriba
+ * Valor negativo indica que ya ha vencido
+ * Para valores positivos, cualquier fracción de día se redondea hacia arriba (ej: 0.1 días = 1 día)
+ */
+export function calculateRemainingDays(deadline: string): number {
+  const hours = calculateRemainingTime(deadline);
+  
+  if (hours <= 0) {
+    // Para SLA vencido, convertir a días negativos
+    return Math.floor(hours / 24);
+  } else {
+    // Para horas positivas, siempre redondear hacia arriba al siguiente día
+    // Si las horas no son un múltiplo perfecto de 24, agregar 1 día
+    return hours % 24 === 0 ? hours / 24 : Math.floor(hours / 24) + 1;
+  }
+}
+
+/**
  * Crear un nuevo usuario
  */
 export async function createUser(userData: CreateUserRequest): Promise<CreateUserResponse> {
@@ -387,5 +472,13 @@ export const USER_ROLE_NAMES: Record<string, string> = {
 export async function downloadIncidentsExcel(carrierId: number = 1, page: number = 1, pageSize: number = 20) {
   console.log(`Requesting Excel download for carrier: ${carrierId}, page: ${page}, pageSize: ${pageSize}`);
   
-  return fetchWithAuth(`/incidence/download?mensajeria=${carrierId}&page=${page}&page_size=${pageSize}`);
+  // Construir la URL base
+  let url = `/incidence/download?page=${page}&page_size=${pageSize}`;
+  
+  // Añadir el parámetro de mensajería solo si no es 0 (Todas las paqueterías)
+  if (carrierId !== 0) {
+    url += `&mensajeria=${carrierId}`;
+  }
+  
+  return fetchWithAuth(url);
 }
