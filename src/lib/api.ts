@@ -127,22 +127,22 @@ export async function updateIncident(updateData: any) {
 export async function updateMultipleIncidents(updateDataArray: any[]) {
   console.log('Actualizando múltiples incidencias:', updateDataArray);
   
-  // Procesar cada elemento del array usando la misma lógica que updateIncidentInternal
-  const processedDataArray = updateDataArray.map(updateData => {
-    // Copiar los datos para no modificar el objeto original
-    const dataToSend: any = { ...updateData };
+  // Simplificar cada elemento del array para que solo contenga incident_id y status
+  const simplifiedDataArray = updateDataArray.map(updateData => {
+    // Extraer solo los campos necesarios según el CURL que funciona
+    const dataToSend: any = {
+      incident_id: updateData.incidentId || updateData.incident_id,
+      status: updateData.status
+    };
     
     // Convertir propiedades de camelCase a snake_case para la API
-    if (dataToSend.incidentId && !dataToSend.incident_id) {
-      dataToSend.incident_id = dataToSend.incidentId;
-      delete dataToSend.incidentId;
+    if (!dataToSend.incident_id && updateData.incidentId) {
+      dataToSend.incident_id = updateData.incidentId;
     }
     
-    // Asegurarse de que el formato es correcto para la API
     // Si recibimos status_mensajeria, convertirlo a status (formato que espera la API)
-    if (dataToSend.status_mensajeria && !dataToSend.status) {
-      dataToSend.status = dataToSend.status_mensajeria;
-      delete dataToSend.status_mensajeria; // Eliminar para usar solo status
+    if (!dataToSend.status && updateData.status_mensajeria) {
+      dataToSend.status = updateData.status_mensajeria;
     }
     
     // Asegurarse de que status sea uno de los valores válidos (no un string con formato)
@@ -153,40 +153,15 @@ export async function updateMultipleIncidents(updateDataArray: any[]) {
       }
     }
     
-    // Si hay datos de address_change que vienen como objeto anidado, ajustar el formato
-    if (dataToSend.actionType === 'address_change' && !dataToSend.address_change) {
-      // Buscar si hay datos de address_change en otro formato
-      const addressChangeKey = Object.keys(dataToSend).find(key => key === 'address_change' || dataToSend[key]?.city);
-      
-      if (addressChangeKey && typeof dataToSend[addressChangeKey] === 'object') {
-        dataToSend.address_change = dataToSend[addressChangeKey];
-        
-        // Si el key no era 'address_change', eliminar la propiedad original
-        if (addressChangeKey !== 'address_change') {
-          delete dataToSend[addressChangeKey];
-        }
-      } else {
-        // Si no encontramos datos de address_change pero es requerido, agregar datos mínimos
-        dataToSend.address_change = {
-          city: "Queretaro"
-        };
-      }
-    }
-    
-    // Asegurarse de que hay notas
-    if (!dataToSend.notes) {
-      dataToSend.notes = `La mensajeria revisa la incidencia`;
-    }
-    
     return dataToSend;
   });
   
-  console.log('Datos finales enviados a la API:', processedDataArray);
+  console.log('Datos finales enviados a la API:', simplifiedDataArray);
   
-  // Usar el proxy API para evitar problemas de CORS
-  return fetchWithAuth('/incidence/update-multiple-incidences', {
+  // Usar el endpoint correcto que funciona en el CURL de ejemplo
+  return fetchWithAuth('/incidence/update-incidence', {
     method: 'POST',
-    body: JSON.stringify(processedDataArray)
+    body: JSON.stringify(simplifiedDataArray)
   });
 }
 

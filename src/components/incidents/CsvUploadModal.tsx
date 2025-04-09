@@ -29,9 +29,20 @@ const STATUS_ENGLISH_TO_SPANISH: Record<string, string> = Object.entries(STATUS_
 export default function CsvUploadModal({ isOpen, onClose, onSuccess, onError }: CsvUploadModalProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [fileName, setFileName] = useState('');
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
+
+  // Function to show success message
+  const showSuccessMessage = (count: number) => {
+    setSuccessMessage(`Las incidencias fueron actualizadas exitosamente (${count})`);
+    
+    // Clear the message after some time
+    setTimeout(() => {
+      setSuccessMessage(null);
+    }, 3000);
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -73,13 +84,26 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, onError }: 
         // Call the API to update multiple incidents
         const result = await updateMultipleIncidents(updates);
         
-        if (result.success) {
+        // Check if the response contains the expected success message or structure
+        if (result.message === "All incidents updated successfully" || 
+            result.processed_incidents || 
+            result.success) {
+          
           setFileName('');
           if (fileInputRef.current) {
             fileInputRef.current.value = '';
           }
+          
+          // Show success message and update the table
           onSuccess();
-          onClose();
+          
+          // Create a success toast notification
+          showSuccessMessage(result.processed_incidents?.length || updates.length);
+          
+          // Close the modal after a short delay to allow the user to see the success message
+          setTimeout(() => {
+            onClose();
+          }, 1500);
         } else {
           throw new Error(result.message || 'Error al actualizar las incidencias');
         }
@@ -128,15 +152,11 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, onError }: 
         status = STATUS_SPANISH_TO_ENGLISH[status];
       }
 
-      // Create update object with the same structure as the example in the task
+      // Create simplified update object with just incident_id and status
+      // This matches the format in the working CURL example
       updates.push({
         incident_id: incidentId,
-        status: status,
-        actionType: "address_change",
-        address_change: {
-          city: "Queretaro"
-        },
-        notes: "Actualización por carga masiva CSV"
+        status: status
       });
     }
 
@@ -183,6 +203,15 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, onError }: 
             </svg>
           </button>
         </div>
+        
+        {successMessage && (
+          <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg flex items-center">
+            <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <span>{successMessage}</span>
+          </div>
+        )}
         
         <p className="text-sm text-[var(--gray-600)] mb-2">
           Sube un archivo CSV para actualizar el estado de múltiples incidencias a la vez.
