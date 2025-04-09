@@ -87,6 +87,19 @@ export default function AppLayout({ children, notificationCount = 0 }: AppLayout
         ></div>
       )}
       
+      {/* Toggle button when sidebar is collapsed - positioned outside the sidebar */}
+      {!sidebarOpen && (
+        <button 
+          className="absolute left-20 top-8 bg-white p-2 rounded-md shadow-md border border-[var(--gray-200)] z-30 text-[var(--gray-600)] hover:text-[var(--primary)]"
+          onClick={() => setSidebarOpen(true)}
+          aria-label="Abrir menú"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </button>
+      )}
+      
       {/* Sidebar */}
       <div 
         className={`${
@@ -107,23 +120,18 @@ export default function AppLayout({ children, notificationCount = 0 }: AppLayout
                 />
               </div>
             </div>
-            <button 
-              className="text-[var(--gray-500)] hover:text-[var(--primary)] transition-colors duration-200 p-1.5 rounded-lg hover:bg-[var(--gray-100)]"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              aria-label={sidebarOpen ? "Cerrar menú" : "Abrir menú"}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                {sidebarOpen ? (
+            {/* Toggle button when sidebar is open */}
+            {sidebarOpen && (
+              <button 
+                className="text-[var(--gray-500)] hover:text-[var(--primary)] transition-colors duration-200 p-1.5 rounded-lg hover:bg-[var(--gray-100)]"
+                onClick={() => setSidebarOpen(false)}
+                aria-label="Cerrar menú"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M18 6L6 18M6 6l12 12" />
-                ) : (
-                  <>
-                    <line x1="3" y1="12" x2="21" y2="12"></line>
-                    <line x1="3" y1="6" x2="21" y2="6"></line>
-                    <line x1="3" y1="18" x2="21" y2="18"></line>
-                  </>
-                )}
-              </svg>
-            </button>
+                </svg>
+              </button>
+            )}
           </div>
           
           {/* Menú principal */}
@@ -170,19 +178,9 @@ export default function AppLayout({ children, notificationCount = 0 }: AppLayout
                       </svg>
                     </div>
                     {sidebarOpen && (
-                      <div className="ml-3 flex-1 flex items-center justify-between">
+                      <div className="ml-3 flex-1 flex items-center">
                         <span className="font-medium">Incidencias</span>
-                        {notificationCount > 0 && (
-                          <span className="inline-flex items-center justify-center w-6 h-6 text-xs font-bold leading-none text-white bg-[var(--primary)] rounded-full">
-                            {notificationCount}
-                          </span>
-                        )}
                       </div>
-                    )}
-                    {!sidebarOpen && notificationCount > 0 && (
-                      <span className="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-xs font-bold leading-none text-white bg-[var(--primary)] rounded-full transform translate-x-1/2 -translate-y-1/2">
-                        {notificationCount}
-                      </span>
                     )}
                     {(pathname === '/incidents' || pathname.startsWith('/incidents/')) && (
                       <span className="absolute inset-y-0 left-0 w-1 bg-[var(--primary)] rounded-r-md"></span>

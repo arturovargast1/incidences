@@ -281,6 +281,7 @@ export interface IncidenceStatsResponse {
   detail: {
     total_of_guides: number;
     overall_percentaje: number;
+    total_incidents?: number;
     couriers: CourierStats[];
   };
 }
@@ -289,10 +290,20 @@ export interface IncidenceStatsResponse {
  * Interfaz para las estadísticas de cada paquetería
  */
 export interface CourierStats {
-  nombre_mensajeria: string;
-  total_de_registros: number;
-  total_de_incidencias: number;
+  // New format fields
+  messaging_name?: string;
+  total_records?: number;
+  total_incidents?: number;
+  
+  // Old format fields (for backward compatibility)
+  nombre_mensajeria?: string;
+  total_de_registros?: number;
+  total_de_incidencias?: number;
+  
+  // Common fields
   percentaje: number;
+  id?: number;
+  mensajeria_id?: number;
 }
 
 /**

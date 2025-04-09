@@ -13,17 +13,17 @@ import { CARRIER_NAMES, INCIDENT_TYPE_NAMES, INCIDENT_STATUS_NAMES } from '../..
 import Link from 'next/link';
 
 export default function Dashboard() {
-  const [selectedCarrier, setSelectedCarrier] = useState<number>(1); // DHL por defecto
+  const [selectedCarrier, setSelectedCarrier] = useState<number>(0); // Todas las paqueterías por defecto
   const [stats, setStats] = useState({
-    incidentRate: '1.02%',
-    slaCompliance: '94.5%',
-    averageTime: '14.5 hrs',
-    firstActionTime: '8.5 hrs',
-    totalIncidents: 240,
-    requiresAction: 24,
-    pending: 18,
-    inProcess: 42,
-    finalized: 156
+    incidentRate: '0%',
+    slaCompliance: '100%',
+    averageTime: '0 hrs',
+    firstActionTime: '0 hrs',
+    totalIncidents: 0,
+    requiresAction: 0,
+    pending: 0,
+    inProcess: 0,
+    finalized: 0
   });
 
   const {

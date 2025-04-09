@@ -75,7 +75,7 @@ export default function SingleCourierCard({
         <div className="bg-white p-4 rounded-lg border border-[var(--gray-200)] shadow-sm">
           <h4 className="text-sm font-semibold text-[var(--gray-600)] mb-2">Tasa de incidencias</h4>
           <p className={`text-2xl font-bold ${getTextColorClass(safePercentage)}`}>
-            {(safePercentage * 100).toFixed(2)}%
+            {safePercentage.toFixed(2)}%
           </p>
         </div>
       </div>
@@ -85,7 +85,7 @@ export default function SingleCourierCard({
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm font-medium text-[var(--gray-700)]">Tasa de incidencias</span>
           <span className={`text-sm font-bold ${getTextColorClass(safePercentage)}`}>
-            {(safePercentage * 100).toFixed(2)}%
+            {safePercentage.toFixed(2)}%
           </span>
         </div>
         <div className="w-full bg-[var(--gray-200)] rounded-full h-2.5 overflow-hidden shadow-inner">

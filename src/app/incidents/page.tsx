@@ -24,7 +24,7 @@ import { Incident } from '../../types/incidents';
 
 export default function IncidentsPage() {
   const router = useRouter();
-  const [selectedCarrier, setSelectedCarrier] = useState<number>(1);
+  const [selectedCarrier, setSelectedCarrier] = useState<number>(0);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -166,8 +166,8 @@ export default function IncidentsPage() {
     if (!incidenceStats) return null;
     
     return incidenceStats.detail.couriers
-      .filter(courier => courier.total_de_registros > 0)
-      .sort((a, b) => b.total_de_registros - a.total_de_registros)
+      .filter(courier => (courier.total_de_registros || courier.total_records || 0) > 0)
+      .sort((a, b) => (b.total_de_registros || b.total_records || 0) - (a.total_de_registros || a.total_records || 0))
       .slice(0, 4)
       .map((courier, index) => {
         // Determinar color del círculo basado en el nombre de la paquetería
@@ -211,7 +211,8 @@ export default function IncidentsPage() {
                 <span className="text-lg font-bold text-[var(--gray-900)]">{(courier.percentaje * 100).toFixed(1)}%</span>
               </div>
               <div className="text-xs font-medium text-[var(--gray-600)]">
-                {courier.total_de_incidencias}/{courier.total_de_registros} envíos
+                {courier.total_de_incidencias || courier.total_incidents || 0}/
+                {courier.total_de_registros || courier.total_records || 0} envíos
               </div>
             </div>
           </div>

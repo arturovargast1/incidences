@@ -66,7 +66,7 @@ export default function CourierPerformanceCard({
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-bold text-[var(--gray-900)]">{((courier.percentaje || 0) * 100).toFixed(2)}%</p>
+                  <p className="text-sm font-bold text-[var(--gray-900)]">{courier.percentaje.toFixed(2)}%</p>
                   <p className="text-xs text-[var(--gray-600)]">{courier.total_incidents || 0} incidencias</p>
                 </div>
               </div>

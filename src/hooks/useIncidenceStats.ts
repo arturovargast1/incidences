@@ -32,25 +32,92 @@ export function useIncidenceStats(selectedCarrierId: number = 0) {
       
       console.log(`Fetching incidence stats for carrier ID: ${selectedCarrierId}`);
       
-      const response = await fetchIncidenceStats(selectedCarrierId);
-      console.log('Incidence stats response:', JSON.stringify(response, null, 2));
+      let response;
+      try {
+        response = await fetchIncidenceStats(selectedCarrierId);
+        console.log('Incidence stats response:', JSON.stringify(response, null, 2));
+      } catch (error) {
+        console.error('Error fetching from API:', error);
+        setError(error instanceof Error ? error.message : 'Error desconocido');
+        setLoading(false);
+        return; // Exit early instead of using mock data
+      }
       
       // Check if the response has the expected structure
       if (response && response.detail) {
         setApiResponse(response);
         
         // Process the API response into our internal format
-        const totalIncidents = response.detail.couriers.reduce(
-          (sum: number, courier: CourierStats) => sum + courier.total_de_incidencias, 
-          0
-        );
+        const totalIncidents = response.detail.total_incidents || 
+          response.detail.couriers.reduce(
+            (sum: number, courier: any) => sum + (courier.total_incidents || courier.total_de_incidencias || 0), 
+            0
+          );
         
-        const mappedCouriers = response.detail.couriers.map((courier: CourierStats) => ({
-          messaging_name: courier.nombre_mensajeria,
-          total_records: courier.total_de_registros,
-          total_incidents: courier.total_de_incidencias,
-          percentaje: courier.percentaje
-        }));
+        // Log the raw courier data to understand its structure
+        console.log('Raw courier data:', JSON.stringify(response.detail.couriers, null, 2));
+        
+        const mappedCouriers = response.detail.couriers.map((courier: any) => {
+          // Check if the courier data is already in the expected format
+          if (courier.messaging_name !== undefined && 
+              courier.total_records !== undefined && 
+              courier.total_incidents !== undefined) {
+            // Data is already in the expected format
+            console.log('Courier data already in expected format:', courier);
+            return {
+              messaging_name: courier.messaging_name,
+              total_records: courier.total_records,
+              total_incidents: courier.total_incidents,
+              percentaje: courier.percentaje
+            };
+          }
+          
+          // If not in expected format, try to map from the old format
+          // Try to determine the courier name from the ID if nombre_mensajeria is empty
+          let courierName = courier.nombre_mensajeria;
+          
+          // Log each courier's data for debugging
+          console.log('Processing courier in old format:', {
+            original: courier,
+            nombre_mensajeria: courier.nombre_mensajeria,
+            id: courier.id,
+            mensajeria_id: courier.mensajeria_id
+          });
+          
+          // If the courier name is empty or null, try to find it by ID
+          if (!courierName || courierName.trim() === '') {
+            // Check if the courier has an ID field
+            if (courier.id) {
+              courierName = getCarrierNameById(courier.id);
+              console.log(`Found name by id ${courier.id}: ${courierName}`);
+            } else if (courier.mensajeria_id) {
+              courierName = getCarrierNameById(courier.mensajeria_id);
+              console.log(`Found name by mensajeria_id ${courier.mensajeria_id}: ${courierName}`);
+            } else {
+              // Try to extract ID from other properties if available
+              console.log('No explicit ID found, looking for ID in other properties');
+              
+              // Check if there are any properties that might contain the courier ID
+              const courierStr = JSON.stringify(courier);
+              const idMatch = courierStr.match(/"id":(\d+)/);
+              if (idMatch && idMatch[1]) {
+                const extractedId = parseInt(idMatch[1]);
+                courierName = getCarrierNameById(extractedId);
+                console.log(`Extracted ID ${extractedId} from JSON, name: ${courierName}`);
+              }
+            }
+          }
+          
+          const result = {
+            messaging_name: courierName || 'Desconocido',
+            total_records: courier.total_de_registros || 0,
+            total_incidents: courier.total_de_incidencias || 0,
+            percentaje: courier.percentaje || 0
+          };
+          
+          console.log('Mapped courier:', result);
+          return result;
+        });
         
         setProcessedStats({
           totalGuides: response.detail.total_of_guides,
