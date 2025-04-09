@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 interface CourierData {
   messaging_name: string;
@@ -23,6 +24,19 @@ export default function CourierPerformanceCard({
     if (percentage < 0.2) return 'bg-green-500';
     if (percentage < 0.5) return 'bg-yellow-500';
     return 'bg-red-500';
+  };
+  
+  // Mapping of courier names to their logo paths
+  const courierLogos: Record<string, string> = {
+    'DHL': '/logos/dhl-logo-wine.svg',
+    'FEDEX': '/logos/fedex.png',
+    'ESTAFETA': '/logos/estafeta_logo.png',
+    'UPS': '/logos/UPS.svg',
+    '99MIN': '/logos/99min.svg',
+    'AMPM': '/logos/ampm.png',
+    'EXPRESS': '/logos/express.png',
+    'JTEXPRESS': '/logos/JTExpress.svg',
+    'T1ENVIOS': '/logos/T1envios.png'
   };
   
   // Ensure couriers is an array
@@ -57,9 +71,21 @@ export default function CourierPerformanceCard({
             {safeCouriers.map((courier, index) => (
               <div key={index} className="flex items-center justify-between p-3 bg-white border border-[var(--gray-200)] rounded-lg hover:shadow-sm transition-all duration-300">
                 <div className="flex items-center">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${getColorClass(courier.percentaje)}`}>
-                    {courier.messaging_name ? courier.messaging_name.substring(0, 1) : '?'}
-                  </div>
+                  {courierLogos[courier.messaging_name] ? (
+                    <div className="w-8 h-8 flex items-center justify-center">
+                      <Image 
+                        src={courierLogos[courier.messaging_name]} 
+                        alt={`${courier.messaging_name} logo`} 
+                        width={32} 
+                        height={32} 
+                        style={{ objectFit: 'contain' }} 
+                      />
+                    </div>
+                  ) : (
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${getColorClass(courier.percentaje)}`}>
+                      {courier.messaging_name ? courier.messaging_name.substring(0, 1) : '?'}
+                    </div>
+                  )}
                   <div className="ml-3">
                     <p className="text-sm font-semibold text-[var(--gray-800)]">{courier.messaging_name || 'Desconocido'}</p>
                     <p className="text-xs text-[var(--gray-600)]">{courier.total_records || 0} guías</p>

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { logout, useCurrentUser, loadUserData } from '../lib/auth';
+import TokenAlert from './TokenAlert';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -265,6 +266,7 @@ export default function AppLayout({ children, notificationCount = 0 }: AppLayout
       
       {/* Contenido principal */}
       <div className="flex-1 flex flex-col overflow-hidden">
+        <TokenAlert />
         {/* Header */}
         <header className="bg-white border-b border-[var(--gray-200)] z-10 shadow-sm">
           <div className="px-6 py-4 flex items-center justify-between">

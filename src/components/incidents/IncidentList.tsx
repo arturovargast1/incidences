@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Incident } from '../../types/incidents';
 import { INCIDENT_TYPE_NAMES, INCIDENT_STATUS_NAMES, calculateRemainingTime, calculateRemainingDays } from '../../lib/api';
 
@@ -24,6 +25,19 @@ export default function IncidentList({
   onPageChange
 }: IncidentListProps) {
   const [filterType, setFilterType] = useState<string>('all');
+  
+  // Mapping of courier names to their logo paths
+  const courierLogos: Record<string, string> = {
+    'DHL': '/logos/dhl-logo-wine.svg',
+    'FEDEX': '/logos/fedex.png',
+    'ESTAFETA': '/logos/estafeta_logo.png',
+    'UPS': '/logos/UPS.svg',
+    '99MIN': '/logos/99min.svg',
+    'AMPM': '/logos/ampm.png',
+    'EXPRESS': '/logos/express.png',
+    'JTEXPRESS': '/logos/JTExpress.svg',
+    'T1ENVIOS': '/logos/T1envios.png'
+  };
 
   // Filtra las incidencias por tipo si es necesario
   const filteredIncidents = filterType === 'all' 
@@ -95,24 +109,37 @@ export default function IncidentList({
                     <p className="text-sm font-medium text-[var(--primary)]">{incident.incidentId}</p>
                     <p className="text-sm text-gray-800">{incident.trackingNumber} - {situacion}</p>
                     <p className="text-xs text-gray-500">Cliente: {incident.shipmentDetails?.origin?.company || incident.shipmentDetails?.destination?.contact || incident.customerName || 'Cliente'}</p>
-                    <p className="text-xs text-gray-500">
-                      Paquetería: {
-                        // Check if carrier object exists first
-                        incident.carrier?.name || 
-                        // Fallback to carrierId mapping if carrier object doesn't exist
-                        (incident.carrierId === 1 ? 'DHL' :
-                        incident.carrierId === 2 ? 'FEDEX' :
-                        incident.carrierId === 3 ? 'ESTAFETA' :
-                        incident.carrierId === 4 ? 'UPS' :
-                        incident.carrierId === 12 ? '99MIN' :
-                        incident.carrierId === 19 ? 'AMPM' :
-                        incident.carrierId === 20 ? 'UPS' :
-                        incident.carrierId === 22 ? 'EXPRESS' :
-                        incident.carrierId === 24 ? 'JTEXPRESS' :
-                        incident.carrierId === 2599 ? 'T1ENVIOS' :
-                        'Desconocida')
-                      }
-                    </p>
+                    <div className="flex items-center mt-1">
+                      <span className="text-xs text-gray-500 mr-2">Paquetería:</span>
+                      {(() => {
+                        const courierName = incident.carrier?.name || 
+                          (incident.carrierId === 1 ? 'DHL' :
+                          incident.carrierId === 2 ? 'FEDEX' :
+                          incident.carrierId === 3 ? 'ESTAFETA' :
+                          incident.carrierId === 4 ? 'UPS' :
+                          incident.carrierId === 12 ? '99MIN' :
+                          incident.carrierId === 19 ? 'AMPM' :
+                          incident.carrierId === 20 ? 'UPS' :
+                          incident.carrierId === 22 ? 'EXPRESS' :
+                          incident.carrierId === 24 ? 'JTEXPRESS' :
+                          incident.carrierId === 2599 ? 'T1ENVIOS' :
+                          'Desconocida');
+                        
+                        const logoPath = courierLogos[courierName];
+                        
+                        return logoPath ? (
+                          <Image 
+                            src={logoPath} 
+                            alt={`${courierName} logo`} 
+                            width={60} 
+                            height={30} 
+                            style={{ objectFit: 'contain' }} 
+                          />
+                        ) : (
+                          <span className="text-xs text-gray-500">{courierName}</span>
+                        );
+                      })()}
+                    </div>
                     
                     {/* Indicador de estado */}
                     <div className="mt-1">

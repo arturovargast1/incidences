@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prueba de Carga CSV</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 {
+      color: #0066cc;
+    }
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .button {
+      background-color: #0066cc;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .button:hover {
+      background-color: #0055aa;
+    }
+    .status-tag {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .status-requires-action {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+    .status-in-review {
+      background-color: #e0f2fe;
+      color: #0369a1;
+    }
+    .status-in-process {
+      background-color: #dbeafe;
+      color: #1e40af;
+    }
+    .status-approved {
+      background-color: #dcfce7;
+      color: #166534;
+    }
+    .status-finalized {
+      background-color: #d1fae5;
+      color: #065f46;
+    }
+    .status-pending {
+      background-color: #f3f4f6;
+      color: #4b5563;
+    }
+  </style>
+</head>
+<body>
+  <h1>Prueba de Carga CSV para Incidencias</h1>
+  
+  <div class="card">
+    <h2>Ejemplo de Archivo CSV</h2>
+    <p>El archivo CSV debe tener el siguiente formato:</p>
+    <table>
+      <thead>
+        <tr>
+          <th>ID_Incidencia</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>INC-12345</td>
+          <td>requiere acción</td>
+        </tr>
+        <tr>
+          <td>INC-67890</td>
+          <td>en proceso</td>
+        </tr>
+        <tr>
+          <td>INC-24680</td>
+          <td>aprobado</td>
+        </tr>
+        <tr>
+          <td>INC-13579</td>
+          <td>finalizado</td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <h3>Estados válidos:</h3>
+    <ul>
+      <li><span class="status-tag status-requires-action">requiere acción</span> → requires_action</li>
+      <li><span class="status-tag status-in-review">en revisión</span> → in_review</li>
+      <li><span class="status-tag status-in-process">en proceso</span> → in_process</li>
+      <li><span class="status-tag status-approved">aprobado</span> → approved</li>
+      <li><span class="status-tag status-finalized">finalizado</span> → finalized</li>
+      <li><span class="status-tag status-pending">pendiente</span> → pending</li>
+    </ul>
+    
+    <p>El sistema convertirá automáticamente los estados en español a sus equivalentes en inglés para el procesamiento.</p>
+    
+    <button id="downloadExample" class="button">Descargar archivo de ejemplo</button>
+  </div>
+  
+  <div class="card">
+    <h2>Probar Conversión</h2>
+    <p>Sube un archivo CSV para probar la conversión de estados:</p>
+    <input type="file" id="csvFile" accept=".csv">
+    <button id="processFile" class="button" style="margin-top: 10px;">Procesar archivo</button>
+    
+    <div id="result" style="margin-top: 20px; display: none;">
+      <h3>Resultado de la conversión:</h3>
+      <pre id="jsonResult" style="background-color: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto;"></pre>
+    </div>
+  </div>
+  
+  <script>
+    // Spanish to English status mapping
+    const STATUS_SPANISH_TO_ENGLISH = {
+      'requiere acción': 'requires_action',
+      'en revisión': 'in_review',
+      'en proceso': 'in_process',
+      'aprobado': 'approved',
+      'finalizado': 'finalized',
+      'pendiente': 'pending'
+    };
+
+    // English to Spanish status mapping
+    const STATUS_ENGLISH_TO_SPANISH = {};
+    Object.entries(STATUS_SPANISH_TO_ENGLISH).forEach(([spanish, english]) => {
+      STATUS_ENGLISH_TO_SPANISH[english] = spanish;
+    });
+
+    // Generate example CSV content
+    function generateExampleCsv() {
+      const headers = "ID_Incidencia,Estado\n";
+      const rows = [
+        `INC-12345,${STATUS_ENGLISH_TO_SPANISH['requires_action']}`,
+        `INC-67890,${STATUS_ENGLISH_TO_SPANISH['in_process']}`,
+        `INC-24680,${STATUS_ENGLISH_TO_SPANISH['approved']}`,
+        `INC-13579,${STATUS_ENGLISH_TO_SPANISH['finalized']}`
+      ].join('\n');
+      
+      return headers + rows;
+    }
+
+    // Download example CSV file
+    document.getElementById('downloadExample').addEventListener('click', function() {
+      const csvContent = generateExampleCsv();
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'ejemplo_actualizacion_incidencias.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+
+    // Parse CSV content
+    function parseCSV(csvContent) {
+      const lines = csvContent.split('\n');
+      const updates = [];
+
+      // Check for Spanish or English headers
+      const hasHeader = lines[0].toLowerCase().includes('incident_id') || 
+                        lines[0].toLowerCase().includes('id_incidencia') ||
+                        lines[0].toLowerCase().includes('guía') ||
+                        lines[0].toLowerCase().includes('estado');
+      
+      const startIndex = hasHeader ? 1 : 0;
+
+      for (let i = startIndex; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+
+        const columns = line.split(',');
+        if (columns.length < 2) continue;
+
+        // Assuming first column is incident_id and second is status
+        const incidentId = columns[0].trim();
+        let status = columns[1].trim().toLowerCase();
+
+        if (!incidentId || !status) continue;
+
+        // Convert Spanish status to English if needed
+        if (STATUS_SPANISH_TO_ENGLISH[status]) {
+          status = STATUS_SPANISH_TO_ENGLISH[status];
+        }
+
+        // Create update object
+        updates.push({
+          incident_id: incidentId,
+          status: status,
+          actionType: "address_change",
+          address_change: {
+            city: "Queretaro"
+          },
+          notes: "Actualización por carga masiva CSV"
+        });
+      }
+
+      return updates;
+    }
+
+    // Process file button click
+    document.getElementById('processFile').addEventListener('click', function() {
+      const fileInput = document.getElementById('csvFile');
+      const resultDiv = document.getElementById('result');
+      const jsonResult = document.getElementById('jsonResult');
+      
+      if (!fileInput.files.length) {
+        alert('Por favor selecciona un archivo CSV');
+        return;
+      }
+      
+      const file = fileInput.files[0];
+      if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
+        alert('El archivo debe ser de tipo CSV');
+        return;
+      }
+      
+      const reader = new FileReader();
+      
+      reader.onload = function(event) {
+        if (!event.target?.result) {
+          alert('Error al leer el archivo');
+          return;
+        }
+        
+        const csvContent = event.target.result;
+        const updates = parseCSV(csvContent);
+        
+        if (updates.length === 0) {
+          alert('El archivo CSV no contiene datos válidos');
+          return;
+        }
+        
+        // Display the result
+        jsonResult.textContent = JSON.stringify(updates, null, 2);
+        resultDiv.style.display = 'block';
+      };
+      
+      reader.onerror = function() {
+        alert('Error al leer el archivo');
+      };
+      
+      reader.readAsText(file);
+    });
+  </script>
+</body>
+</html>

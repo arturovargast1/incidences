@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Token Modal</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .card {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    h1 {
+      color: #2d3748;
+    }
+    button {
+      background-color: #4299e1;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover {
+      background-color: #3182ce;
+    }
+    .code {
+      background-color: #f7fafc;
+      padding: 12px;
+      border-radius: 4px;
+      font-family: monospace;
+      margin: 10px 0;
+      border: 1px solid #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Test Token Modal</h1>
+  
+  <div class="card">
+    <h2>Instrucciones</h2>
+    <p>Esta página permite probar el modal de alerta de token. Haz clic en el botón para simular un problema con el token de autenticación.</p>
+    
+    <div class="code">
+      window.tokenHasIssues = true;
+    </div>
+    
+    <p>Cuando esta variable global se establece en <code>true</code>, el componente TokenAlert detectará el problema y mostrará el modal.</p>
+    
+    <button id="triggerModal">Simular problema de token</button>
+    <button id="resetModal">Restablecer</button>
+  </div>
+  
+  <div class="card">
+    <h2>Cómo funciona</h2>
+    <p>El componente TokenAlert verifica periódicamente si la variable global <code>window.tokenHasIssues</code> está establecida en <code>true</code>. Cuando detecta este valor, muestra el modal de alerta.</p>
+    <p>En una aplicación real, esta variable podría establecerse cuando:</p>
+    <ul>
+      <li>Una solicitud API devuelve un error de autenticación</li>
+      <li>El token ha expirado</li>
+      <li>Se detecta un problema de seguridad</li>
+    </ul>
+  </div>
+  
+  <script>
+    // Inicialmente, no hay problemas con el token
+    window.tokenHasIssues = false;
+    
+    // Botón para simular un problema con el token
+    document.getElementById('triggerModal').addEventListener('click', function() {
+      window.tokenHasIssues = true;
+      alert('Variable window.tokenHasIssues establecida a true. El modal debería aparecer en breve.');
+    });
+    
+    // Botón para restablecer
+    document.getElementById('resetModal').addEventListener('click', function() {
+      window.tokenHasIssues = false;
+      alert('Variable window.tokenHasIssues restablecida a false. El modal debería cerrarse.');
+    });
+  </script>
+</body>
+</html>

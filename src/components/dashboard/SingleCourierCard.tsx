@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 interface CourierData {
   messaging_name: string;
@@ -27,6 +28,19 @@ export default function SingleCourierCard({
     if (percentage < 0.5) return 'bg-yellow-500 text-white';
     return 'bg-red-500 text-white';
   };
+  
+  // Mapping of courier names to their logo paths
+  const courierLogos: Record<string, string> = {
+    'DHL': '/logos/dhl-logo-wine.svg',
+    'FEDEX': '/logos/fedex.png',
+    'ESTAFETA': '/logos/estafeta_logo.png',
+    'UPS': '/logos/UPS.svg',
+    '99MIN': '/logos/99min.svg',
+    'AMPM': '/logos/ampm.png',
+    'EXPRESS': '/logos/express.png',
+    'JTEXPRESS': '/logos/JTExpress.svg',
+    'T1ENVIOS': '/logos/T1envios.png'
+  };
 
   // Function to determine text color based on percentage
   const getTextColorClass = (percentage: number): string => {
@@ -39,9 +53,21 @@ export default function SingleCourierCard({
     <div className="tienvios-card p-6 border border-[var(--gray-200)] shadow-sm hover:shadow-lg transition-all duration-300">
       <div className="flex justify-between items-start mb-6">
         <div className="flex items-center">
-          <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold ${getColorClass(safePercentage)}`}>
-            {courier.messaging_name ? courier.messaging_name.substring(0, 1) : '?'}
-          </div>
+          {courierLogos[courier.messaging_name] ? (
+            <div className="w-12 h-12 flex items-center justify-center">
+              <Image 
+                src={courierLogos[courier.messaging_name]} 
+                alt={`${courier.messaging_name} logo`} 
+                width={48} 
+                height={48} 
+                style={{ objectFit: 'contain' }} 
+              />
+            </div>
+          ) : (
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold ${getColorClass(safePercentage)}`}>
+              {courier.messaging_name ? courier.messaging_name.substring(0, 1) : '?'}
+            </div>
+          )}
           <div className="ml-4">
             <h3 className="text-lg font-bold text-[var(--gray-800)]">
               {courier.messaging_name || 'Desconocido'}

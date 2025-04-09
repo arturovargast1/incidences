@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { updateMultipleIncidents } from '../../lib/api';
+import { updateMultipleIncidents, INCIDENT_STATUS_NAMES } from '../../lib/api';
+import { IncidentStatus } from '../../types/incidents';
 
 interface CsvUploadModalProps {
   isOpen: boolean;
@@ -9,6 +10,21 @@ interface CsvUploadModalProps {
   onSuccess: () => void;
   onError: (error: string) => void;
 }
+
+// Spanish to English status mapping
+const STATUS_SPANISH_TO_ENGLISH: Record<string, IncidentStatus> = {
+  'requiere acción': 'requires_action',
+  'pendiente': 'pending',
+  'en proceso': 'in_process',
+  'finalizado': 'finalized'
+};
+
+// English to Spanish status mapping (for the example file)
+const STATUS_ENGLISH_TO_SPANISH: Record<string, string> = Object.entries(STATUS_SPANISH_TO_ENGLISH)
+  .reduce((acc, [spanish, english]) => {
+    acc[english] = spanish;
+    return acc;
+  }, {} as Record<string, string>);
 
 export default function CsvUploadModal({ isOpen, onClose, onSuccess, onError }: CsvUploadModalProps) {
   const [isUploading, setIsUploading] = useState(false);
@@ -86,9 +102,13 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, onError }: 
     const lines = csvContent.split('\n');
     const updates: any[] = [];
 
-    // Skip header row if it exists
-    const startIndex = lines[0].toLowerCase().includes('incident_id') || 
-                       lines[0].toLowerCase().includes('guía') ? 1 : 0;
+    // Check for Spanish or English headers
+    const hasHeader = lines[0].toLowerCase().includes('incident_id') || 
+                      lines[0].toLowerCase().includes('id_incidencia') ||
+                      lines[0].toLowerCase().includes('guía') ||
+                      lines[0].toLowerCase().includes('estado');
+    
+    const startIndex = hasHeader ? 1 : 0;
 
     for (let i = startIndex; i < lines.length; i++) {
       const line = lines[i].trim();
@@ -99,9 +119,14 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, onError }: 
 
       // Assuming first column is incident_id and second is status
       const incidentId = columns[0].trim();
-      const status = columns[1].trim();
+      let status = columns[1].trim().toLowerCase();
 
       if (!incidentId || !status) continue;
+
+      // Convert Spanish status to English if needed
+      if (STATUS_SPANISH_TO_ENGLISH[status]) {
+        status = STATUS_SPANISH_TO_ENGLISH[status];
+      }
 
       // Create update object with the same structure as the example in the task
       updates.push({
@@ -118,9 +143,35 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, onError }: 
     return updates;
   };
 
+  // Generate example CSV content in Spanish
+  const generateExampleCsv = () => {
+    const headers = "ID_Incidencia,Estado\n";
+    const rows = [
+      `INC-12345,${STATUS_ENGLISH_TO_SPANISH['requires_action']}`,
+      `INC-67890,${STATUS_ENGLISH_TO_SPANISH['pending']}`,
+      `INC-24680,${STATUS_ENGLISH_TO_SPANISH['in_process']}`,
+      `INC-13579,${STATUS_ENGLISH_TO_SPANISH['finalized']}`
+    ].join('\n');
+    
+    return headers + rows;
+  };
+
+  // Download example CSV file
+  const downloadExampleCsv = () => {
+    const csvContent = generateExampleCsv();
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'ejemplo_actualizacion_incidencias.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+    <div className="fixed inset-0 bg-transparent backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-bold text-[var(--gray-900)]">Actualización masiva de incidencias</h3>
           <button 
@@ -133,10 +184,21 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, onError }: 
           </button>
         </div>
         
-        <p className="text-sm text-[var(--gray-600)] mb-4">
+        <p className="text-sm text-[var(--gray-600)] mb-2">
           Sube un archivo CSV para actualizar el estado de múltiples incidencias a la vez.
           El archivo debe tener dos columnas: ID de incidencia y estado.
         </p>
+        <div className="mb-4">
+          <button 
+            onClick={downloadExampleCsv}
+            className="text-sm text-[var(--primary)] hover:underline flex items-center"
+          >
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+            </svg>
+            Descargar archivo de ejemplo
+          </button>
+        </div>
         
         <div className="mb-4">
           <label htmlFor="csvFile" className="block text-sm font-semibold text-[var(--gray-700)] mb-2">
@@ -160,7 +222,7 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, onError }: 
                   {fileName || 'Seleccionar archivo CSV...'}
                 </span>
               </div>
-              <button className="tienvios-button-outline text-sm ml-2 px-3 py-1.5 flex items-center">
+              <button className="tienvios-button-outline text-sm ml-2 px-4 py-2 rounded-xl flex items-center">
                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13l-3 3m0 0l-3-3m3 3V8m0 13a9 9 0 110-18 9 9 0 010 18z" />
                 </svg>
@@ -172,14 +234,25 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, onError }: 
             <svg className="w-4 h-4 mr-1 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            Formato: incident_id,status
+            Formato: ID_Incidencia,Estado
           </p>
+          <div className="mt-2 text-xs text-[var(--gray-500)]">
+            <p className="font-semibold mb-1">Estados válidos:</p>
+            <ul className="grid grid-cols-2 gap-x-4">
+              {Object.entries(STATUS_ENGLISH_TO_SPANISH).map(([english, spanish]) => (
+                <li key={english} className="flex items-center">
+                  <span className="w-2 h-2 bg-[var(--primary)] rounded-full mr-1"></span>
+                  {spanish}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
         
         <div className="flex justify-end gap-3 mt-6">
           <button
             onClick={onClose}
-            className="tienvios-button-secondary"
+            className="tienvios-button-secondary px-4 py-2 rounded-xl"
             disabled={isUploading}
           >
             Cancelar
@@ -187,7 +260,7 @@ export default function CsvUploadModal({ isOpen, onClose, onSuccess, onError }: 
           <button
             onClick={handleUpload}
             disabled={isUploading || !fileName}
-            className="tienvios-button flex items-center justify-center"
+            className="tienvios-button px-4 py-2 rounded-xl flex items-center justify-center"
           >
             {isUploading ? (
               <>

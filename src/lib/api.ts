@@ -1,6 +1,7 @@
 import { getToken, API_URL, getCurrentUser } from './auth';
 import { Incident, IncidentStatus, IncidentType, IncidentUpdateRequest } from '../types/incidents';
 import { CreateUserRequest, CreateUserResponse, User } from '../types/users';
+import { checkTokenIssue } from './tokenUtils';
 
 /**
  * Función para realizar peticiones autenticadas
@@ -62,12 +63,18 @@ async function fetchWithAuth(endpoint: string, options: RequestInit = {}, retryC
       const errorMessage = responseData.message || `Error ${response.status}: ${response.statusText}`;
       console.error('API error:', errorMessage, responseData);
       
-      // Si es un error de autenticación, eliminar el token y redirigir al login
+      // Si es un error de autenticación, marcar el problema con el token
       if (response.status === 401 || response.status === 403) {
-        console.warn('Token no autorizado, eliminando y redirigiendo al login');
+        console.warn('Token no autorizado, marcando problema con el token');
         
-        // Eliminar el token para forzar la redirección al login
-        localStorage.removeItem('token');
+        // Marcar el problema con el token para mostrar el modal
+        checkTokenIssue({
+          status: response.status,
+          message: 'Token no autorizado'
+        });
+        
+        // No eliminamos el token inmediatamente para evitar pérdida de datos
+        // El usuario puede elegir cerrar sesión desde el modal
         
         throw new Error('Error de autenticación. Por favor, inicie sesión nuevamente.');
       }

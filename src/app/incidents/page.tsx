@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import AuthGuard from '../../components/AuthGuard';
 import AppLayout from '../../components/AppLayout';
 import { useIncidents } from '../../hooks/useIncidents';
@@ -17,6 +18,7 @@ import {
   calculateRemainingDays
 } from '../../lib/api';
 import CsvUploadModal from '../../components/incidents/CsvUploadModal';
+import ExportErrorModal from '../../components/ExportErrorModal';
 import IncidenceRateCard from '../../components/dashboard/IncidenceRateCard';
 import CourierPerformanceCard from '../../components/dashboard/CourierPerformanceCard';
 import SingleCourierCard from '../../components/dashboard/SingleCourierCard';
@@ -36,8 +38,23 @@ export default function IncidentsPage() {
   const [incidenceStats, setIncidenceStats] = useState<IncidenceStatsResponse | null>(null);
   const [loadingStats, setLoadingStats] = useState<boolean>(true);
   const [exportLoading, setExportLoading] = useState<boolean>(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [isExportErrorModalOpen, setIsExportErrorModalOpen] = useState<boolean>(false);
   const [batchUpdateError, setBatchUpdateError] = useState<string | null>(null);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState<boolean>(false);
+  
+  // Mapping of courier names to their logo paths
+  const courierLogos: Record<string, string> = {
+    'DHL': '/logos/dhl-logo-wine.svg',
+    'FEDEX': '/logos/fedex.png',
+    'ESTAFETA': '/logos/estafeta_logo.png',
+    'UPS': '/logos/UPS.svg',
+    '99MIN': '/logos/99min.svg',
+    'AMPM': '/logos/ampm.png',
+    'EXPRESS': '/logos/express.png',
+    'JTEXPRESS': '/logos/JTExpress.svg',
+    'T1ENVIOS': '/logos/T1envios.png'
+  };
   
   const {
     incidents,
@@ -295,11 +312,13 @@ export default function IncidentsPage() {
         window.open(response.data.file_url, '_blank');
       } else {
         console.error('Error al exportar a Excel:', response.message || 'No se pudo obtener la URL del archivo');
-        alert('Error al exportar a Excel: ' + (response.message || 'No se pudo obtener la URL del archivo'));
+        setExportError(response.message || 'No se pudo obtener la URL del archivo');
+        setIsExportErrorModalOpen(true);
       }
     } catch (error) {
       console.error('Error al exportar a Excel:', error);
-      alert('Error al exportar a Excel: ' + (error instanceof Error ? error.message : 'Error desconocido'));
+      setExportError(error instanceof Error ? error.message : 'Error desconocido');
+      setIsExportErrorModalOpen(true);
     } finally {
       setExportLoading(false);
     }
@@ -316,7 +335,7 @@ export default function IncidentsPage() {
           
           {/* Stats section removed as requested */}
           
-          {/* CSV Upload Modal */}
+          {/* Modals */}
           <CsvUploadModal 
             isOpen={isUploadModalOpen}
             onClose={() => setIsUploadModalOpen(false)}
@@ -325,6 +344,12 @@ export default function IncidentsPage() {
               setBatchUpdateError(null);
             }}
             onError={(error: string) => setBatchUpdateError(error)}
+          />
+          
+          <ExportErrorModal
+            isOpen={isExportErrorModalOpen}
+            onClose={() => setIsExportErrorModalOpen(false)}
+            errorMessage={exportError || ''}
           />
           
           {/* Error message for batch update */}
@@ -633,32 +658,52 @@ export default function IncidentsPage() {
                                 : `${calculateRemainingDays(incident.deadline)} días`}
                             </span>
                           </td>
-                          <td>
-                            {/* First check if carrier object exists */}
-                            {incident.carrier?.name ? (
-                              <div className={`carrier-icon ${
-                                incident.carrier.name === 'DHL' ? 'carrier-icon-dhl' :
-                                incident.carrier.name === 'FEDEX' ? 'carrier-icon-fedex' :
-                                incident.carrier.name === 'ESTAFETA' ? 'carrier-icon-estafeta' :
-                                incident.carrier.name === 'UPS' ? 'carrier-icon-ups' :
-                                ''
-                              }`}>
-                                {incident.carrier.name === 'DHL' ? 'DHL' :
-                                 incident.carrier.name === 'FEDEX' ? 'FDX' :
-                                 incident.carrier.name === 'ESTAFETA' ? 'EST' :
-                                 incident.carrier.name === 'UPS' ? 'UPS' :
-                                 incident.carrier.name.substring(0, 3)}
-                              </div>
-                            ) : (
-                              /* Fallback to carrierId if carrier object doesn't exist */
-                              <>
-                                {incident.carrierId === 1 && <div className="carrier-icon carrier-icon-dhl">DHL</div>}
-                                {incident.carrierId === 2 && <div className="carrier-icon carrier-icon-fedex">FDX</div>}
-                                {incident.carrierId === 3 && <div className="carrier-icon carrier-icon-estafeta">EST</div>}
-                                {incident.carrierId === 4 && <div className="carrier-icon carrier-icon-ups">UPS</div>}
-                                {!incident.carrierId && <div className="text-gray-500">-</div>}
-                              </>
-                            )}
+                          <td className="text-center">
+                            {(() => {
+                              // Determine courier name
+                              const courierName = incident.carrier?.name || 
+                                (incident.carrierId === 1 ? 'DHL' :
+                                incident.carrierId === 2 ? 'FEDEX' :
+                                incident.carrierId === 3 ? 'ESTAFETA' :
+                                incident.carrierId === 4 ? 'UPS' :
+                                incident.carrierId === 12 ? '99MIN' :
+                                incident.carrierId === 19 ? 'AMPM' :
+                                incident.carrierId === 20 ? 'UPS' :
+                                incident.carrierId === 22 ? 'EXPRESS' :
+                                incident.carrierId === 24 ? 'JTEXPRESS' :
+                                incident.carrierId === 2599 ? 'T1ENVIOS' :
+                                'Desconocida');
+                              
+                              // Get logo path
+                              const logoPath = courierLogos[courierName];
+                              
+                              return logoPath ? (
+                                <div className="flex justify-center">
+                                  <Image 
+                                    src={logoPath} 
+                                    alt={`${courierName} logo`} 
+                                    width={60} 
+                                    height={30} 
+                                    style={{ objectFit: 'contain' }} 
+                                  />
+                                </div>
+                              ) : (
+                                // Fallback to the original colored circles if no logo is found
+                                <div className={`carrier-icon ${
+                                  courierName === 'DHL' ? 'carrier-icon-dhl' :
+                                  courierName === 'FEDEX' ? 'carrier-icon-fedex' :
+                                  courierName === 'ESTAFETA' ? 'carrier-icon-estafeta' :
+                                  courierName === 'UPS' ? 'carrier-icon-ups' :
+                                  ''
+                                }`}>
+                                  {courierName === 'DHL' ? 'DHL' :
+                                   courierName === 'FEDEX' ? 'FDX' :
+                                   courierName === 'ESTAFETA' ? 'EST' :
+                                   courierName === 'UPS' ? 'UPS' :
+                                   courierName.substring(0, 3)}
+                                </div>
+                              );
+                            })()}
                           </td>
                           <td>{getSituacion(incident.type)}</td>
                           <td>
