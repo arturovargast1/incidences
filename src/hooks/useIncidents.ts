@@ -47,6 +47,8 @@ export function useIncidents(carrierId: number) {
               trackingNumber: raw.guide_number || rawIncident.guideNumber || rawIncident.trackingNumber,
               commerceId: raw.commerce_id || rawIncident.commerceId,
               carrierId: raw.carrier_id || rawIncident.carrierId,
+              // Add carrier object if it exists in the API response
+              carrier: raw.carrier || rawIncident.carrier,
               status_mensajeria: rawIncident.status_mensajeria || rawIncident.status,
               status: rawIncident.status,
               type: rawIncident.type,

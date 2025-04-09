@@ -95,6 +95,24 @@ export default function IncidentList({
                     <p className="text-sm font-medium text-[var(--primary)]">{incident.incidentId}</p>
                     <p className="text-sm text-gray-800">{incident.trackingNumber} - {situacion}</p>
                     <p className="text-xs text-gray-500">Cliente: {incident.shipmentDetails?.origin?.company || incident.shipmentDetails?.destination?.contact || incident.customerName || 'Cliente'}</p>
+                    <p className="text-xs text-gray-500">
+                      Paquetería: {
+                        // Check if carrier object exists first
+                        incident.carrier?.name || 
+                        // Fallback to carrierId mapping if carrier object doesn't exist
+                        (incident.carrierId === 1 ? 'DHL' :
+                        incident.carrierId === 2 ? 'FEDEX' :
+                        incident.carrierId === 3 ? 'ESTAFETA' :
+                        incident.carrierId === 4 ? 'UPS' :
+                        incident.carrierId === 12 ? '99MIN' :
+                        incident.carrierId === 19 ? 'AMPM' :
+                        incident.carrierId === 20 ? 'UPS' :
+                        incident.carrierId === 22 ? 'EXPRESS' :
+                        incident.carrierId === 24 ? 'JTEXPRESS' :
+                        incident.carrierId === 2599 ? 'T1ENVIOS' :
+                        'Desconocida')
+                      }
+                    </p>
                     
                     {/* Indicador de estado */}
                     <div className="mt-1">

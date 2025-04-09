@@ -634,10 +634,31 @@ export default function IncidentsPage() {
                             </span>
                           </td>
                           <td>
-                            {incident.carrierId === 1 && <div className="carrier-icon carrier-icon-dhl">DHL</div>}
-                            {incident.carrierId === 2 && <div className="carrier-icon carrier-icon-fedex">FDX</div>}
-                            {incident.carrierId === 3 && <div className="carrier-icon carrier-icon-estafeta">EST</div>}
-                            {incident.carrierId === 4 && <div className="carrier-icon carrier-icon-ups">UPS</div>}
+                            {/* First check if carrier object exists */}
+                            {incident.carrier?.name ? (
+                              <div className={`carrier-icon ${
+                                incident.carrier.name === 'DHL' ? 'carrier-icon-dhl' :
+                                incident.carrier.name === 'FEDEX' ? 'carrier-icon-fedex' :
+                                incident.carrier.name === 'ESTAFETA' ? 'carrier-icon-estafeta' :
+                                incident.carrier.name === 'UPS' ? 'carrier-icon-ups' :
+                                ''
+                              }`}>
+                                {incident.carrier.name === 'DHL' ? 'DHL' :
+                                 incident.carrier.name === 'FEDEX' ? 'FDX' :
+                                 incident.carrier.name === 'ESTAFETA' ? 'EST' :
+                                 incident.carrier.name === 'UPS' ? 'UPS' :
+                                 incident.carrier.name.substring(0, 3)}
+                              </div>
+                            ) : (
+                              /* Fallback to carrierId if carrier object doesn't exist */
+                              <>
+                                {incident.carrierId === 1 && <div className="carrier-icon carrier-icon-dhl">DHL</div>}
+                                {incident.carrierId === 2 && <div className="carrier-icon carrier-icon-fedex">FDX</div>}
+                                {incident.carrierId === 3 && <div className="carrier-icon carrier-icon-estafeta">EST</div>}
+                                {incident.carrierId === 4 && <div className="carrier-icon carrier-icon-ups">UPS</div>}
+                                {!incident.carrierId && <div className="text-gray-500">-</div>}
+                              </>
+                            )}
                           </td>
                           <td>{getSituacion(incident.type)}</td>
                           <td>

@@ -79,6 +79,10 @@ export interface Incident {
   trackingNumber?: string; // Para mantener compatibilidad con el código existente
   commerceId?: number;
   carrierId: number;
+  carrier?: {
+    id: number;
+    name: string;
+  };
   status_mensajeria: IncidentStatus;
   status?: IncidentStatus; // Mantener por compatibilidad retroactiva
   type: IncidentType;
