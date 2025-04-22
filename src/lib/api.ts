@@ -330,23 +330,28 @@ export const CARRIER_NAMES: Record<number, string> = {
 /**
  * Mapea los tipos de incidencia a nombres legibles
  */
-export const INCIDENT_TYPE_NAMES: Record<IncidentType, string> = {
+export const INCIDENT_TYPE_NAMES: Record<string, string> = {
   'address_change': 'Cambio de dirección',
-  'recipient_not_found': 'Destinatario no encontrado',
+  'recipient_not_found': 'Destinatario no localizado',
   'restricted_access': 'Acceso restringido',
   'package_without_movement': 'Paquete sin movimiento',
   'package_rejected': 'Paquete rechazado',
-  'failed_pickups': 'Recolección fallida',
-  'delivery_delay': 'Retraso en entrega',
+  'failed_pickups': 'Recolecciones fallidas',
+  'delivery_delay': 'Demora en la entrega',
   'package_pending_pickup': 'Paquete pendiente de recolección',
   'package_damaged': 'Paquete dañado',
   'package_lost': 'Paquete perdido',
   'package_opened_or_tampered': 'Paquete abierto o manipulado',
   'theft': 'Robo',
   'theft_with_violence': 'Robo con violencia',
-  'return_to_origin': 'Retorno al origen',
+  'return_to_origin': 'Retornar a origen',
   'compensation_payment': 'Pago de compensación',
-  'package_not_received': 'Paquete no recibido'
+  'package_not_received': 'Paquete no recibido',
+  // Nuevos tipos de incidencia
+  'wrong_address_delivery': 'Entrega en dirección incorrecta',
+  'send_to_courier': 'Enviar paquete a sucursal',
+  'overweight': 'Aclaración sobrepeso',
+  'cancel_guide': 'Cancelar guía'
 };
 
 /**

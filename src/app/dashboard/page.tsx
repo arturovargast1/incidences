@@ -388,40 +388,48 @@ export default function Dashboard() {
                       Reintentar
                     </button>
                   </div>
-                ) : (
+                ) : incidenceStats?.incidentsByType?.length ? (
                   <div className="space-y-4">
-                    {Object.entries(INCIDENT_TYPE_NAMES)
-                      .map(([type, name]) => {
-                        const count = incidents.filter(inc => inc.type === type).length;
-                        const percentage = incidents.length > 0 ? Math.round((count / incidents.length) * 100) : 0;
-                        return { type, name, count, percentage };
-                      })
+                    {incidenceStats.incidentsByType
                       .sort((a, b) => b.count - a.count) // Sort by count in descending order
-                      .map(({ type, name, count, percentage }) => (
-                        <div key={type} className="p-4 bg-white border border-[var(--gray-200)] rounded-lg hover:shadow-sm transition-all duration-300">
-                          <div className="flex justify-between items-center mb-3">
-                            <div className="flex items-center">
-                              <div className="w-8 h-8 rounded-lg bg-[var(--primary-light)] flex items-center justify-center text-[var(--primary)] mr-3">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                                </svg>
+                      .map((typeData) => {
+                        // Get the display name from the INCIDENT_TYPE_NAMES mapping
+                        const displayName = INCIDENT_TYPE_NAMES[typeData.incident_type as keyof typeof INCIDENT_TYPE_NAMES] || 
+                                          typeData.incident_type.replace(/_/g, ' ');
+                        
+                        return (
+                          <div key={typeData.incident_type} className="p-4 bg-white border border-[var(--gray-200)] rounded-lg hover:shadow-sm transition-all duration-300">
+                            <div className="flex justify-between items-center mb-3">
+                              <div className="flex items-center">
+                                <div className="w-8 h-8 rounded-lg bg-[var(--primary-light)] flex items-center justify-center text-[var(--primary)] mr-3">
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                  </svg>
+                                </div>
+                                <p className="text-sm font-bold text-[var(--gray-900)]">{displayName}</p>
                               </div>
-                              <p className="text-sm font-bold text-[var(--gray-900)]">{name}</p>
+                              <div className="flex items-center">
+                                <span className="text-sm font-bold text-[var(--primary)]">{typeData.count}</span>
+                                <span className="ml-1 text-xs font-medium text-[var(--gray-600)]">({typeData.percentage_of_incidents.toFixed(2)}%)</span>
+                              </div>
                             </div>
-                            <div className="flex items-center">
-                              <span className="text-sm font-bold text-[var(--primary)]">{count}</span>
-                              <span className="ml-1 text-xs font-medium text-[var(--gray-600)]">({percentage}%)</span>
+                            <div className="w-full bg-[var(--gray-100)] rounded-full h-2.5 overflow-hidden shadow-inner">
+                              <div 
+                                className="bg-[var(--primary)] h-2.5 rounded-full transition-all duration-500" 
+                                style={{ width: `${typeData.percentage_of_incidents}%` }}
+                              ></div>
                             </div>
                           </div>
-                          <div className="w-full bg-[var(--gray-100)] rounded-full h-2.5 overflow-hidden shadow-inner">
-                            <div 
-                              className="bg-[var(--primary)] h-2.5 rounded-full transition-all duration-500" 
-                              style={{ width: `${percentage}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                      ))
+                        );
+                      })
                     }
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                    <svg className="w-12 h-12 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <p>No hay datos de tipos de incidencia disponibles</p>
                   </div>
                 )}
                 </div>
@@ -437,37 +445,112 @@ export default function Dashboard() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatusCard 
-                title="Requieren Acción"
-                count={stats.requiresAction}
-                bgColor="bg-[var(--status-requires-action)]"
-                textColor="text-[var(--status-requires-action-text)]"
-                borderColor="border-[var(--status-requires-action-border)]"
-              />
-              
-              <StatusCard 
-                title="Pendientes"
-                count={stats.pending}
-                bgColor="bg-[var(--status-pending)]"
-                textColor="text-[var(--status-pending-text)]"
-                borderColor="border-[var(--status-pending-border)]"
-              />
-              
-              <StatusCard 
-                title="En Proceso"
-                count={stats.inProcess}
-                bgColor="bg-[var(--status-in-process)]"
-                textColor="text-[var(--status-in-process-text)]"
-                borderColor="border-[var(--status-in-process-border)]"
-              />
-              
-              <StatusCard 
-                title="Finalizadas"
-                count={stats.finalized}
-                bgColor="bg-[var(--status-finalized)]"
-                textColor="text-[var(--status-finalized-text)]"
-                borderColor="border-[var(--status-finalized-border)]"
-              />
+              {loading ? (
+                <div className="col-span-full flex justify-center py-6">
+                  <div className="h-10 w-10 animate-spin rounded-full border-b-2 border-[var(--primary)]"></div>
+                </div>
+              ) : error ? (
+                <div className="col-span-full flex flex-col items-center justify-center text-red-500 py-6">
+                  <svg className="w-12 h-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <p className="text-center">Error al cargar datos: {error}</p>
+                </div>
+              ) : (
+                <>
+                  {/* Map through incident status data or use default statuses if not available */}
+                  {incidenceStats?.incidentsByStatus?.length ? (
+                    <>
+                      {/* Generate status cards for existing API statuses */}
+                      {['requires_action', 'pending', 'in_process', 'finalized'].map(statusKey => {
+                        const statusData = incidenceStats.incidentsByStatus?.find(s => s.status === statusKey);
+                        
+                        let title, bgColor, textColor, borderColor;
+                        
+                        // Define properties based on status
+                        switch(statusKey) {
+                          case 'requires_action':
+                            title = "Requieren Acción";
+                            bgColor = "bg-[var(--status-requires-action)]";
+                            textColor = "text-[var(--status-requires-action-text)]";
+                            borderColor = "border-[var(--status-requires-action-border)]";
+                            break;
+                          case 'pending':
+                            title = "Pendientes";
+                            bgColor = "bg-[var(--status-pending)]";
+                            textColor = "text-[var(--status-pending-text)]";
+                            borderColor = "border-[var(--status-pending-border)]";
+                            break;
+                          case 'in_process':
+                            title = "En Proceso";
+                            bgColor = "bg-[var(--status-in-process)]";
+                            textColor = "text-[var(--status-in-process-text)]";
+                            borderColor = "border-[var(--status-in-process-border)]";
+                            break;
+                          case 'finalized':
+                            title = "Finalizadas";
+                            bgColor = "bg-[var(--status-finalized)]";
+                            textColor = "text-[var(--status-finalized-text)]";
+                            borderColor = "border-[var(--status-finalized-border)]";
+                            break;
+                          default:
+                            title = statusKey;
+                            bgColor = "bg-gray-100";
+                            textColor = "text-gray-800";
+                            borderColor = "border-gray-200";
+                        }
+                        
+                        return (
+                          <StatusCard 
+                            key={statusKey}
+                            title={title}
+                            count={statusData?.count || 0}
+                            bgColor={bgColor}
+                            textColor={textColor}
+                            borderColor={borderColor}
+                            percentageOfIncidents={statusData?.percentage_of_incidents || 0}
+                          />
+                        );
+                      })}
+                    </>
+                  ) : (
+                    <>
+                      {/* Default cards if API doesn't return data */}
+                      <StatusCard 
+                        title="Requieren Acción"
+                        count={0}
+                        bgColor="bg-[var(--status-requires-action)]"
+                        textColor="text-[var(--status-requires-action-text)]"
+                        borderColor="border-[var(--status-requires-action-border)]"
+                      />
+                      
+                      <StatusCard 
+                        title="Pendientes"
+                        count={0}
+                        bgColor="bg-[var(--status-pending)]"
+                        textColor="text-[var(--status-pending-text)]"
+                        borderColor="border-[var(--status-pending-border)]"
+                      />
+                      
+                      <StatusCard 
+                        title="En Proceso"
+                        count={0}
+                        bgColor="bg-[var(--status-in-process)]"
+                        textColor="text-[var(--status-in-process-text)]"
+                        borderColor="border-[var(--status-in-process-border)]"
+                      />
+                      
+                      <StatusCard 
+                        title="Finalizadas"
+                        count={0}
+                        bgColor="bg-[var(--status-finalized)]"
+                        textColor="text-[var(--status-finalized-text)]"
+                        borderColor="border-[var(--status-finalized-border)]"
+                      />
+                    </>
+                  )}
+                </>
+              )}
             </div>
           </div>
           

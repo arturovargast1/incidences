@@ -22,7 +22,12 @@ export type IncidentType =
   | 'theft_with_violence'
   | 'return_to_origin'
   | 'compensation_payment'
-  | 'package_not_received';
+  | 'package_not_received'
+  // Nuevos tipos de incidencia
+  | 'wrong_address_delivery'
+  | 'send_to_courier'
+  | 'overweight'
+  | 'cancel_guide';
 
 export type IncidentStatus = 
   | 'requires_action'

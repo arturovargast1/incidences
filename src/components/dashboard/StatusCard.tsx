@@ -14,6 +14,8 @@ interface StatusCardProps {
     isPositive: boolean;
   };
   suffix?: string;
+  percentageOfIncidents?: number;
+  percentageOfTotalGuides?: number;
 }
 
 export default function StatusCard({ 
@@ -24,7 +26,9 @@ export default function StatusCard({
   borderColor,
   icon,
   trend,
-  suffix = ''
+  suffix = '',
+  percentageOfIncidents = 0,
+  percentageOfTotalGuides = 0
 }: StatusCardProps) {
   const [animatedCount, setAnimatedCount] = useState(0);
   
@@ -116,15 +120,25 @@ export default function StatusCard({
         </div>
       </div>
       
-      {/* Barra de progreso opcional para visualizar el valor */}
-      {count > 0 && count <= 100 && (
-        <div className="mt-4 w-full bg-white bg-opacity-30 rounded-full h-2 overflow-hidden shadow-inner">
+      {/* Estadísticas de porcentajes */}
+      <div className="mt-4">
+        <div className="flex justify-between items-center mb-1">
+          <span className={`text-xs font-medium ${textColor} opacity-80`}>
+            % del total de incidencias
+          </span>
+          <span className={`text-xs font-semibold ${textColor}`}>
+            {percentageOfIncidents.toFixed(2)}%
+          </span>
+        </div>
+        <div className="w-full bg-white bg-opacity-30 rounded-full h-2 overflow-hidden shadow-inner">
           <div 
             className="bg-current h-2 rounded-full transition-all duration-1000 ease-out" 
-            style={{ width: `${animatedCount}%`, opacity: 0.8 }}
+            style={{ width: `${percentageOfIncidents}%`, opacity: 0.8 }}
           ></div>
         </div>
-      )}
+      </div>
+      
+      {/* Removed additional progress bar */}
     </div>
   );
 }
