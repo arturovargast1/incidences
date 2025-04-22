@@ -81,6 +81,12 @@ export default function CreateUserForm({ onCancel, onSuccess }: CreateUserFormPr
       setError('La contraseña debe tener al menos 8 caracteres');
       return;
     }
+    
+    // Validar que se proporcione admin_key si el rol es admin
+    if (formData.role_type === 'admin' && !formData.admin_key) {
+      setError('Para crear un usuario administrador, debe proporcionar la clave de administrador');
+      return;
+    }
 
     try {
       setLoading(true);
@@ -300,6 +306,24 @@ export default function CreateUserForm({ onCancel, onSuccess }: CreateUserFormPr
               ))}
             </select>
           </div>
+          
+          {formData.role_type === 'admin' && (
+            <div>
+              <label htmlFor="admin_key" className="block text-sm font-medium text-[var(--gray-700)] mb-1">
+                Clave de administrador *
+              </label>
+              <input
+                type="password"
+                id="admin_key"
+                name="admin_key"
+                value={formData.admin_key || ''}
+                onChange={handleChange}
+                className="filter-control"
+                placeholder="Clave de administrador"
+                required
+              />
+            </div>
+          )}
         </div>
         
         <div className="flex justify-end space-x-3 mt-6">

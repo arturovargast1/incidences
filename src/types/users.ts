@@ -20,6 +20,7 @@ export interface CreateUserRequest {
   puesto: string;
   empresa: string;
   role_type: UserRole;
+  admin_key?: string; // Optional admin key for admin users
 }
 
 export interface CreateUserResponse {

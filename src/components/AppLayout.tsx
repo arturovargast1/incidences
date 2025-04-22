@@ -231,7 +231,8 @@ export default function AppLayout({ children, notificationCount = 0 }: AppLayout
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
                     <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-[var(--primary)] to-[var(--primary-dark)] flex items-center justify-center text-white font-medium shadow-sm">
-                      {loading ? '...' : getUserInitials()}
+                      {/* Force client-side only rendering to avoid hydration mismatch */}
+                      {typeof window === 'undefined' ? 'U' : (loading ? '...' : getUserInitials())}
                     </div>
                   </div>
                   <div className="ml-3">

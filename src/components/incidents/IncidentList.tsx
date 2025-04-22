@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { Incident } from '../../types/incidents';
-import { INCIDENT_TYPE_NAMES, INCIDENT_STATUS_NAMES, calculateRemainingTime, calculateRemainingDays } from '../../lib/api';
+import { INCIDENT_TYPE_NAMES, INCIDENT_STATUS_NAMES, calculateRemainingTime, calculateRemainingDays, determineSlaStatus } from '../../lib/api';
 
 interface IncidentListProps {
   incidents: Incident[];
@@ -81,6 +81,7 @@ export default function IncidentList({
         {filteredIncidents.length > 0 ? (
           filteredIncidents.map((incident) => {
             const remainingTime = calculateRemainingTime(incident.deadline);
+            const slaStatus = determineSlaStatus(incident);
             
             // Determinar el tipo de situación basado en el tipo de incidencia
             let situacion = "Dirección incorrecta";
@@ -171,11 +172,11 @@ export default function IncidentList({
                           }
                         </span>
                         <span className={`ml-2 sla-tag sla-tag-sm ${
-                          remainingTime <= 0 ? 'sla-expired' : 
+                          !slaStatus.isOnTime ? 'sla-expired' : 
                           remainingTime <= 8 ? 'sla-warning' : 
                           'sla-in-time'
                         }`}>
-                          {remainingTime <= 0 ? 'Vencido' : 'En tiempo'}
+                          {slaStatus.label}
                         </span>
                       </div>
                       <span className="text-xs font-medium text-gray-700">

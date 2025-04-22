@@ -261,10 +261,14 @@ export interface IncidenceStatsResponse {
   success: boolean;
   message: string;
   detail: {
-    total_of_guides: number;
-    overall_percentaje: number;
-    total_incidents?: number;
+    summary: {
+      total_guides: number;
+      total_incidents: number;
+      overall_percentage: number;
+    };
     couriers: CourierStats[];
+    incidents_by_status: IncidentStatusStats[];
+    incidents_by_type: IncidentTypeStats[];
   };
 }
 
@@ -272,20 +276,40 @@ export interface IncidenceStatsResponse {
  * Interfaz para las estadísticas de cada paquetería
  */
 export interface CourierStats {
-  // New format fields
-  messaging_name?: string;
-  total_records?: number;
-  total_incidents?: number;
+  // Current format fields
+  messaging_name: string;
+  total_records: number;
+  total_incidents: number;
+  percentage_of_guides: number;
+  percentage_of_total_incidents: number;
   
   // Old format fields (for backward compatibility)
   nombre_mensajeria?: string;
   total_de_registros?: number;
   total_de_incidencias?: number;
-  
-  // Common fields
-  percentaje: number;
+  percentaje?: number;
   id?: number;
   mensajeria_id?: number;
+}
+
+/**
+ * Interfaz para las estadísticas de incidencias por estado
+ */
+export interface IncidentStatusStats {
+  status: string;
+  count: number;
+  percentage_of_incidents: number;
+  percentage_of_total_guides: number;
+}
+
+/**
+ * Interfaz para las estadísticas de incidencias por tipo
+ */
+export interface IncidentTypeStats {
+  incident_type: string;
+  count: number;
+  percentage_of_incidents: number;
+  percentage_of_total_guides: number;
 }
 
 /**
@@ -406,6 +430,65 @@ export function calculateRemainingDays(deadline: string): number {
     // Si las horas no son un múltiplo perfecto de 24, agregar 1 día
     return hours % 24 === 0 ? hours / 24 : Math.floor(hours / 24) + 1;
   }
+}
+
+/**
+ * Determina el estado SLA de una incidencia, considerando si está finalizada y cuándo fue finalizada
+ * Retorna { isOnTime: boolean, label: string }
+ */
+export function determineSlaStatus(incident: any): { isOnTime: boolean, label: string } {
+  if (!incident) {
+    return { isOnTime: true, label: 'En tiempo' };
+  }
+
+  // Si la incidencia está finalizada, verificamos cuándo se finalizó
+  if (incident.status_mensajeria === 'finalized') {
+    // Buscar en el timeline el evento de finalización
+    const timeline = incident.timeline || [];
+    const finalizationEvent = timeline.find((event: any) => 
+      event.status === 'finalized' || 
+      event.status === 'Finalizada' || 
+      event.status === 'finalized_timestamp'
+    );
+
+    if (finalizationEvent) {
+      // Verificar si se finalizó antes del deadline
+      const finalizationDate = new Date(finalizationEvent.timestamp);
+      const deadlineDate = new Date(incident.deadline);
+      
+      // Si se finalizó antes del deadline, siempre es "En tiempo"
+      if (finalizationDate < deadlineDate) {
+        return { isOnTime: true, label: 'En tiempo' };
+      } else {
+        return { isOnTime: false, label: 'Vencida' };
+      }
+    }
+  }
+  
+  // Si no está finalizada o no encontramos cuando se finalizó,
+  // usamos la lógica tradicional basada en el tiempo restante
+  const remainingTime = calculateRemainingTime(incident.deadline);
+  return {
+    isOnTime: remainingTime > 0,
+    label: remainingTime <= 0 ? 'Vencida' : 'En tiempo'
+  };
+}
+
+// Ensure backwards compatibility with existing code that may rely on these functions
+// Added to fix the TypeError in Dashboard
+export function getSlaCompliancePercentage(incidents: any[]): number {
+  if (!incidents || incidents.length === 0) return 100.0;
+  
+  const now = new Date();
+  const pastDeadlineCount = incidents.filter(inc => {
+    // Use our new determineSlaStatus function
+    const slaStatus = determineSlaStatus(inc);
+    return !slaStatus.isOnTime;
+  }).length;
+  
+  return incidents.length > 0 
+    ? (100 - (pastDeadlineCount / incidents.length * 100))
+    : 100.0;
 }
 
 /**

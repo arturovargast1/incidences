@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Incident } from '../../types/incidents';
-import { INCIDENT_STATUS_NAMES, INCIDENT_TYPE_NAMES, formatDate, calculateRemainingDays } from '../../lib/api';
+import { INCIDENT_STATUS_NAMES, INCIDENT_TYPE_NAMES, formatDate, calculateRemainingDays, determineSlaStatus } from '../../lib/api';
 import PhotoGallery from './PhotoGallery';
 
 // Mapa de traducciones para los campos comunes
@@ -89,15 +89,6 @@ export default function IncidentDetail({ incident, onStatusChange }: IncidentDet
 
   // Manejar click en el botón 'Finalizar'
   const handleFinalize = () => {
-    if (!loading && onStatusChange) {
-      setLoading(true);
-      onStatusChange('finalized');
-      setTimeout(() => setLoading(false), 500);
-    }
-  };
-  
-  // Manejar click en el botón 'Retornar al origen'
-  const handleReturnToOrigin = () => {
     if (!loading && onStatusChange) {
       setLoading(true);
       onStatusChange('finalized');
@@ -256,6 +247,8 @@ export default function IncidentDetail({ incident, onStatusChange }: IncidentDet
   }, [incident]);
   
   // Obtener datos del SLA directamente de la incidencia
+  // Obtener el estado SLA considerando si la incidencia está finalizada
+  const slaStatus = determineSlaStatus(incident);
   const hoursRemaining = incident.slaHours || incident.metadata?.resolutionTime || 52;
   const daysRemaining = incident.deadline ? calculateRemainingDays(incident.deadline) : Math.ceil(hoursRemaining / 24);
   const timePercentage = Math.min(100, (hoursRemaining / 52) * 100);
@@ -429,11 +422,11 @@ export default function IncidentDetail({ incident, onStatusChange }: IncidentDet
               <div className="text-sm font-bold text-gray-900">
                 SLA: {daysRemaining} días
                 <span className={`ml-2 sla-tag ${
-                  hoursRemaining <= 0 ? 'sla-expired' : 
+                  !slaStatus.isOnTime ? 'sla-expired' : 
                   hoursRemaining <= 8 ? 'sla-warning' : 
                   'sla-in-time'
                 }`}>
-                  {hoursRemaining <= 0 ? 'Vencido' : 'En tiempo'}
+                  {slaStatus.label}
                 </span>
               </div>
               <div className="text-xs text-gray-600">{formattedDeadline}</div>
@@ -642,22 +635,13 @@ export default function IncidentDetail({ incident, onStatusChange }: IncidentDet
             )}
             
             {incident.status_mensajeria === 'in_process' && (
-              <>
-                <button 
-                  onClick={handleReturnToOrigin}
-                  disabled={loading}
-                  className="tienvios-button-secondary"
-                >
-                  {loading ? 'Procesando...' : 'Retornar al origen'}
-                </button>
-                <button 
-                  onClick={handleFinalize}
-                  disabled={loading}
-                  className="tienvios-button"
-                >
-                  {loading ? 'Procesando...' : 'Finalizar'}
-                </button>
-              </>
+              <button 
+                onClick={handleFinalize}
+                disabled={loading}
+                className="tienvios-button"
+              >
+                {loading ? 'Procesando...' : 'Finalizar'}
+              </button>
             )}
           </div>
         </div>

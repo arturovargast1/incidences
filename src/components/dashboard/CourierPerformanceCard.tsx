@@ -7,7 +7,9 @@ interface CourierData {
   messaging_name: string;
   total_records: number;
   total_incidents: number;
-  percentaje: number;
+  percentaje?: number;
+  percentage_of_guides?: number;
+  percentage_of_total_incidents?: number;
 }
 
 interface CourierPerformanceCardProps {
@@ -82,7 +84,7 @@ export default function CourierPerformanceCard({
                       />
                     </div>
                   ) : (
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${getColorClass(courier.percentaje)}`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${getColorClass(courier.percentaje || courier.percentage_of_guides || 0)}`}>
                       {courier.messaging_name ? courier.messaging_name.substring(0, 1) : '?'}
                     </div>
                   )}
@@ -92,7 +94,7 @@ export default function CourierPerformanceCard({
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-bold text-[var(--gray-900)]">{courier.percentaje.toFixed(2)}%</p>
+                  <p className="text-sm font-bold text-[var(--gray-900)]">{(courier.percentaje || courier.percentage_of_guides || 0).toFixed(2)}%</p>
                   <p className="text-xs text-[var(--gray-600)]">{courier.total_incidents || 0} incidencias</p>
                 </div>
               </div>

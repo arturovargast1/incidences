@@ -7,7 +7,9 @@ interface CourierData {
   messaging_name: string;
   total_records: number;
   total_incidents: number;
-  percentaje: number;
+  percentaje?: number;
+  percentage_of_guides?: number;
+  percentage_of_total_incidents?: number;
 }
 
 interface SingleCourierCardProps {
@@ -17,8 +19,9 @@ interface SingleCourierCardProps {
 export default function SingleCourierCard({
   courier
 }: SingleCourierCardProps) {
-  // Ensure all values are valid numbers
-  const safePercentage = isNaN(courier.percentaje) ? 0 : courier.percentaje;
+  // Ensure all values are valid numbers - handle both old and new API formats
+  const percentage = courier.percentage_of_guides ?? courier.percentaje ?? 0;
+  const safePercentage = isNaN(percentage) ? 0 : percentage;
   const safeRecords = isNaN(courier.total_records) ? 0 : courier.total_records;
   const safeIncidents = isNaN(courier.total_incidents) ? 0 : courier.total_incidents;
   

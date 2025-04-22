@@ -207,22 +207,25 @@ export default function Dashboard() {
               
               {/* Added information from Tasa de incidencias card */}
               {incidenceStats && (
-                <div className="mt-4">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-xs font-medium text-[var(--gray-600)]">
-                      Tasa de incidencias
-                      {incidenceStats.isFiltered && incidenceStats.selectedCourier && (
-                        <span className="ml-1 font-semibold">
-                          ({incidenceStats.selectedCourier.messaging_name})
-                        </span>
-                      )}
-                    </span>
-                    <span className="text-xs font-semibold text-red-600">{incidenceStats.overallPercentage.toFixed(2)}%</span>
-                  </div>
+              <div className="mt-4">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-xs font-medium text-[var(--gray-600)]">
+                    Tasa de incidencias
+                    {incidenceStats.isFiltered && incidenceStats.selectedCourier && (
+                      <span className="ml-1 font-semibold">
+                        ({incidenceStats.selectedCourier.messaging_name})
+                      </span>
+                    )}
+                  </span>
+                  <span className="text-xs font-semibold text-red-600">
+                    {incidenceStats.overallPercentage ? 
+                     incidenceStats.overallPercentage.toFixed(2) : '0.00'}%
+                  </span>
+                </div>
                   <div className="w-full bg-[var(--gray-200)] rounded-full h-2 shadow-inner">
                     <div 
                       className="bg-red-500 h-2 rounded-full" 
-                      style={{ width: `${incidenceStats.overallPercentage}%` }}
+                      style={{ width: `${incidenceStats.overallPercentage || 0}%` }}
                     ></div>
                   </div>
                   <p className="mt-1 text-xs text-[var(--gray-600)]">
