@@ -67,7 +67,7 @@ export function useIncidenceStats(selectedCarrierId: number = 0) {
             totalGuides: summary.total_guides,
             overallPercentage: summary.overall_percentage,
             totalIncidents: summary.total_incidents,
-            couriers: couriers.map(courier => ({
+            couriers: couriers.map((courier: any) => ({
               messaging_name: courier.messaging_name,
               total_records: courier.total_records,
               total_incidents: courier.total_incidents,
