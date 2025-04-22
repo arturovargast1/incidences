@@ -225,7 +225,7 @@ export default function IncidentsPage() {
             </div>
             <div>
               <div className="flex items-center">
-                <span className="text-lg font-bold text-[var(--gray-900)]">{(courier.percentaje * 100).toFixed(1)}%</span>
+                <span className="text-lg font-bold text-[var(--gray-900)]">{((courier.percentaje || 0) * 100).toFixed(1)}%</span>
               </div>
               <div className="text-xs font-medium text-[var(--gray-600)]">
                 {courier.total_de_incidencias || courier.total_incidents || 0}/
