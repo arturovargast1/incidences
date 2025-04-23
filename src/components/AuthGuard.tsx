@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, getToken } from '../lib/auth';
+import { getKeycloakToken } from '../lib/keycloak';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -16,6 +17,22 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   // TESTING MODE: Bypass authentication for development
   const BYPASS_AUTH = true; // Set to true to bypass authentication checks
 
+  // Verificar ambos tokens (sistema actual y Keycloak)
+  function isUserAuthenticated(): boolean {
+    // En modo de desarrollo, siempre devolver true
+    if (BYPASS_AUTH) return true;
+    
+    // Verificar si hay algún token válido (sistema actual o Keycloak)
+    const currentToken = getToken();
+    const keycloakToken = getKeycloakToken();
+    
+    console.log('Auth check - Current system token:', currentToken ? 'Present' : 'Missing');
+    console.log('Auth check - Keycloak token:', keycloakToken ? 'Present' : 'Missing');
+    
+    // Durante la fase de transición, consideramos autenticado si tiene al menos uno de los tokens
+    return !!currentToken || !!keycloakToken;
+  }
+
   // Verificar autenticación en cada renderizado y redirigir si no está autenticado
   useEffect(() => {
     if (BYPASS_AUTH) {
@@ -25,18 +42,16 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     }
 
     if (!isLoading) {
-      if (!isAuthenticated) {
+      if (!isUserAuthenticated()) {
         console.log('Usuario no autenticado, redirigiendo a login');
         router.push('/auth/login');
       } else {
         setAuthChecked(true);
         
-        // Verificar el token cada 5 minutos
+        // Verificar los tokens cada 5 minutos
         const intervalId = setInterval(() => {
-          const token = getToken();
-          
-          if (!token) {
-            console.log('Token no encontrado o inválido, redirigiendo a login');
+          if (!isUserAuthenticated()) {
+            console.log('Tokens no encontrados o inválidos, redirigiendo a login');
             router.push('/auth/login');
           }
         }, 5 * 60 * 1000); // 5 minutos
@@ -51,9 +66,8 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     if (BYPASS_AUTH) return; // Skip for testing
 
     const handleRouteChange = () => {
-      const token = getToken();
-      if (!token) {
-        console.log('Token no encontrado durante la navegación, redirigiendo a login');
+      if (!isUserAuthenticated()) {
+        console.log('Tokens no encontrados durante la navegación, redirigiendo a login');
         router.push('/auth/login');
       }
     };
@@ -75,5 +89,5 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   }
 
   // Always render children in testing mode
-  return BYPASS_AUTH ? <>{children}</> : (isAuthenticated ? <>{children}</> : null);
+  return BYPASS_AUTH ? <>{children}</> : (isUserAuthenticated() ? <>{children}</> : null);
 }

@@ -1,19 +1,42 @@
 import { getToken, API_URL, getCurrentUser } from './auth';
+import { getKeycloakToken } from './keycloak';
 import { Incident, IncidentStatus, IncidentType, IncidentUpdateRequest } from '../types/incidents';
 import { CreateUserRequest, CreateUserResponse, User } from '../types/users';
 import { checkTokenIssue } from './tokenUtils';
 
 /**
  * Función para realizar peticiones autenticadas
+ * @param endpoint Ruta relativa de la API
+ * @param options Opciones de fetch
+ * @param tokenType Tipo de token a usar ('legacy', 'keycloak', o 'auto')
+ * @param useKeycloakHeader Si es true, añade el token de Keycloak en la cabecera 'token'
+ * @param retryCount Contador de reintentos (uso interno)
  */
-async function fetchWithAuth(endpoint: string, options: RequestInit = {}, retryCount = 0) {
+async function fetchWithAuth(
+  endpoint: string, 
+  options: RequestInit = {}, 
+  tokenType: 'legacy' | 'keycloak' | 'auto' = 'auto',
+  useKeycloakHeader: boolean = false,
+  retryCount = 0
+) {
   // Máximo número de reintentos
   const MAX_RETRIES = 1;
   
-  const token = getToken();
+  // Determinar qué token usar para la autorización principal
+  let token: string | null = null;
+  
+  if (tokenType === 'legacy' || tokenType === 'auto') {
+    // Intentar obtener el token del sistema legacy
+    token = getToken();
+  }
+  
+  if ((tokenType === 'keycloak' || (tokenType === 'auto' && !token))) {
+    // Intentar obtener el token de Keycloak si no tenemos token legacy o si se especifica Keycloak
+    token = getKeycloakToken();
+  }
   
   if (!token) {
-    throw new Error('No hay token de autenticación');
+    throw new Error('No hay token de autenticación disponible');
   }
   
   const headers = new Headers(options.headers || {});
@@ -22,6 +45,17 @@ async function fetchWithAuth(endpoint: string, options: RequestInit = {}, retryC
   // Asegurarse de que el token se envía con el formato correcto
   // Algunos backends esperan solo el token sin 'Bearer'
   headers.set('Authorization', `Bearer ${token}`);
+  
+  // Si se solicitó, añadir el token de Keycloak en la cabecera 'token'
+  if (useKeycloakHeader) {
+    const keycloakToken = getKeycloakToken();
+    if (keycloakToken) {
+      console.log('Adding Keycloak token to header as requested');
+      headers.set('token', keycloakToken);
+    } else {
+      console.warn('Keycloak token requested but not available');
+    }
+  }
   
   console.log(`Fetching from: ${API_URL}${endpoint}`);
   console.log(`With token: Bearer ${token.substring(0, 15)}...`);
@@ -242,8 +276,10 @@ export async function fetchIncidentDetails(incidentId: string) {
 
 /**
  * Obtener estadísticas de incidencias para el dashboard
+ * @param carrierId ID de la paquetería (opcional)
+ * @param useKeycloakToken Si es true, añade el token de Keycloak en la cabecera 'token'
  */
-export async function fetchIncidenceStats(carrierId?: number) {
+export async function fetchIncidenceStats(carrierId?: number, useKeycloakToken: boolean = false) {
   let url = '/incidence/cardsadmin';
   
   // Añadir el parámetro de mensajería solo si se proporciona y no es 0 (Todas las paqueterías)
@@ -251,7 +287,46 @@ export async function fetchIncidenceStats(carrierId?: number) {
     url += `?mensajeria=${carrierId}`;
   }
   
-  return fetchWithAuth(url);
+  console.log(`Fetching incidence stats with Keycloak token: ${useKeycloakToken}`);
+  
+  return fetchWithAuth(url, {}, 'auto', useKeycloakToken);
+}
+
+/**
+ * Función para probar la integración de Keycloak con el endpoint cardsadmin
+ * Esta función hace una petición con ambos tokens (Keycloak en 'token' header y el token actual en 'Authorization')
+ */
+export async function testKeycloakIntegration() {
+  console.log('Testing Keycloak integration with cardsadmin endpoint');
+  
+  try {
+    // Verificar que ambos tokens estén disponibles
+    const currentToken = getToken();
+    const keycloakToken = getKeycloakToken();
+    
+    if (!currentToken || !keycloakToken) {
+      console.warn('Missing tokens for test:',
+        !currentToken ? 'Current token missing' : '',
+        !keycloakToken ? 'Keycloak token missing' : '');
+      return { success: false, message: 'Missing tokens for test' };
+    }
+    
+    // Hacer la petición con ambos tokens
+    const response = await fetchIncidenceStats(undefined, true);
+    
+    return {
+      success: true,
+      message: 'Keycloak integration test successful',
+      data: response
+    };
+  } catch (error) {
+    console.error('Keycloak integration test failed:', error);
+    return {
+      success: false,
+      message: `Keycloak integration test failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      error
+    };
+  }
 }
 
 /**

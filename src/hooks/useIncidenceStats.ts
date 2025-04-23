@@ -38,8 +38,10 @@ export function useIncidenceStats(selectedCarrierId: number = 0) {
       
       let response;
       try {
-        response = await fetchIncidenceStats(selectedCarrierId);
-        console.log('Incidence stats response:', JSON.stringify(response, null, 2));
+        // Try with Keycloak token in the 'token' header (new approach)
+        const useKeycloakToken = true;
+        response = await fetchIncidenceStats(selectedCarrierId, useKeycloakToken);
+        console.log('Incidence stats response with Keycloak token:', JSON.stringify(response, null, 2));
       } catch (error) {
         console.error('Error fetching from API:', error);
         setError(error instanceof Error ? error.message : 'Error desconocido');

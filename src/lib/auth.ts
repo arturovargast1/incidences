@@ -26,9 +26,28 @@ export async function login(email: string, password: string): Promise<AuthRespon
   try {
     // Limpiamos cualquier token anterior para evitar conflictos
     localStorage.removeItem('token');
+    localStorage.removeItem('keycloak_token');
+    localStorage.removeItem('keycloak_refresh_token');
+    localStorage.removeItem('keycloak_token_expires_at');
     
     console.log('Iniciando login con email:', email);
+
+    // First, authenticate with Keycloak
+    try {
+      console.log('Intentando autenticación con Keycloak...');
+      console.log('Email:', email);
+      
+      const keycloakResponse = await import('./keycloak').then(keycloak => 
+        keycloak.keycloakLogin(email, password)
+      );
+      console.log('Autenticación con Keycloak exitosa, token recibido');
+    } catch (keycloakError) {
+      console.error('Error en la autenticación con Keycloak:', keycloakError);
+      throw new Error('Error de autenticación con Keycloak: ' + 
+        (keycloakError instanceof Error ? keycloakError.message : String(keycloakError)));
+    }
     
+    // Then, authenticate with the current system
     const response = await fetch(`/api/proxy/incidence/login`, {
       method: 'POST',
       headers: {
@@ -117,6 +136,12 @@ export function logout(): void {
   // Limpiar token y datos de usuario
   localStorage.removeItem('token');
   localStorage.removeItem(USER_STORAGE_KEY);
+  
+  // Limpiar tokens de Keycloak
+  localStorage.removeItem('keycloak_token');
+  localStorage.removeItem('keycloak_refresh_token');
+  localStorage.removeItem('keycloak_token_expires_at');
+  
   cachedUser = null; // Limpiar la caché en memoria
   
   if (typeof window !== 'undefined') {

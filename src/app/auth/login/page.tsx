@@ -25,8 +25,19 @@ export default function Login() {
       
       await login(email, password);
       router.push('/dashboard');
-    } catch (err) {
-      setError('Credenciales inválidas. Por favor, intenta de nuevo.');
+    } catch (err: any) {
+      // Display the specific error message from the authentication system
+      const errorMessage = err?.message || 'Credenciales inválidas. Por favor, intenta de nuevo.';
+      // Simplify Keycloak error messages for better user experience
+      if (errorMessage.includes('Error de autenticación con Keycloak:')) {
+        if (errorMessage.includes('invalid_grant') || errorMessage.includes('Invalid user credentials')) {
+          setError('Credenciales inválidas en Keycloak. Por favor, verifica tu email y contraseña.');
+        } else {
+          setError('Error de autenticación en Keycloak. Por favor, intenta nuevamente.');
+        }
+      } else {
+        setError(errorMessage);
+      }
       console.error(err);
     } finally {
       setLoading(false);

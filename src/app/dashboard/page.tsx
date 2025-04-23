@@ -7,6 +7,7 @@ import StatusCard from '../../components/dashboard/StatusCard';
 import IncidenceRateCard from '../../components/dashboard/IncidenceRateCard';
 import CourierPerformanceCard from '../../components/dashboard/CourierPerformanceCard';
 import SingleCourierCard from '../../components/dashboard/SingleCourierCard';
+import KeycloakStatus from '../../components/KeycloakStatus';
 import { useIncidents } from '../../hooks/useIncidents';
 import { useIncidenceStats } from '../../hooks/useIncidenceStats';
 import { CARRIER_NAMES, INCIDENT_TYPE_NAMES, INCIDENT_STATUS_NAMES } from '../../lib/api';
@@ -133,6 +134,11 @@ export default function Dashboard() {
           {/* Header con título y descripción */}
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-[var(--gray-900)] mb-2">Dashboard de Incidencias</h1>
+          </div>
+          
+          {/* Keycloak Status for development/testing */}
+          <div className="mb-8">
+            <KeycloakStatus />
           </div>
           
           {/* Selector de paquetería y botón de actualización */}

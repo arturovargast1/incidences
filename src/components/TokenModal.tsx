@@ -15,7 +15,18 @@ export default function TokenModal({ isOpen, onClose }: TokenModalProps) {
 
   const handleLogout = () => {
     if (typeof window !== 'undefined') {
+      // Clear both token types
       localStorage.removeItem('token');
+      
+      // Clear Keycloak tokens as well
+      localStorage.removeItem('keycloak_token');
+      localStorage.removeItem('keycloak_refresh_token');
+      localStorage.removeItem('keycloak_token_expires_at');
+      
+      // Clear any user data
+      localStorage.removeItem('current_user');
+      
+      // Redirect to login page
       router.push('/auth/login');
     }
   };
@@ -45,7 +56,7 @@ export default function TokenModal({ isOpen, onClose }: TokenModalProps) {
             </span>
           </div>
           <p className="text-sm text-[var(--gray-600)] mb-2">
-            Se ha detectado un problema con tu token de autenticación. Se seguirá usando para evitar pérdida de datos, pero es recomendable cerrar sesión e iniciar nuevamente.
+            Se ha detectado un problema con tu token de autenticación. La aplicación intentará refrescar tu token de forma automática cuando sea posible, pero es recomendable cerrar sesión e iniciar nuevamente si persisten los problemas.
           </p>
         </div>
         

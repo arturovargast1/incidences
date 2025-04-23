@@ -105,36 +105,59 @@ export default function CreateUserForm({ onCancel, onSuccess }: CreateUserFormPr
       console.log('Enviando datos de usuario:', formData);
       console.log('Token disponible:', token.substring(0, 15) + '...');
       
+      // Paso 1: Crear usuario en Keycloak primero
       try {
-        // Usar la API real para crear el usuario
-        const response = await createUser(formData);
+        console.log('Creando usuario en Keycloak...');
+        const keycloak = await import('@/lib/keycloak');
         
-        if (response.success) {
-          // Mostrar toast de éxito
-          showToast('Usuario creado exitosamente', 'success');
+        const keycloakCreated = await keycloak.createKeycloakUser(
+          formData.user, // email
+          formData.password,
+          formData.nombre, // firstName
+          formData.apellidos // lastName
+        );
+        
+        if (!keycloakCreated) {
+          throw new Error('No se pudo crear el usuario en Keycloak');
+        }
+        
+        console.log('Usuario creado exitosamente en Keycloak');
+        
+        // Paso 2: Crear usuario en el sistema actual
+        try {
+          // Usar la API real para crear el usuario
+          const response = await createUser(formData);
           
-          // Regresar inmediatamente a la lista de usuarios
-          onSuccess();
-        } else {
-          setError(response.message || 'Error al crear el usuario');
+          if (response.success) {
+            // Mostrar toast de éxito
+            showToast('Usuario creado exitosamente', 'success');
+            
+            // Regresar inmediatamente a la lista de usuarios
+            onSuccess();
+          } else {
+            setError(response.message || 'Error al crear el usuario en el sistema');
+          }
+        } catch (apiErr: any) {
+          console.error('Error en la llamada a la API del sistema:', apiErr);
+          
+          // Mostrar un mensaje de error más amigable
+          if (apiErr.message && apiErr.message.includes('token')) {
+            setError('Error de autenticación. Por favor, inicie sesión nuevamente.');
+            setTimeout(() => {
+              window.location.href = '/auth/login';
+            }, 2000);
+          } else if (apiErr.message && apiErr.message.includes('Authorization')) {
+            setError('Información de autorización no disponible. Por favor, inicie sesión nuevamente.');
+            setTimeout(() => {
+              window.location.href = '/auth/login';
+            }, 2000);
+          } else {
+            setError(`Error al crear el usuario en el sistema. El usuario se creó en Keycloak pero no en el sistema: ${apiErr.message || 'Error desconocido'}`);
+          }
         }
-      } catch (apiErr: any) {
-        console.error('Error en la llamada a la API:', apiErr);
-        
-        // Mostrar un mensaje de error más amigable
-        if (apiErr.message && apiErr.message.includes('token')) {
-          setError('Error de autenticación. Por favor, inicie sesión nuevamente.');
-          setTimeout(() => {
-            window.location.href = '/auth/login';
-          }, 2000);
-        } else if (apiErr.message && apiErr.message.includes('Authorization')) {
-          setError('Información de autorización no disponible. Por favor, inicie sesión nuevamente.');
-          setTimeout(() => {
-            window.location.href = '/auth/login';
-          }, 2000);
-        } else {
-          setError(apiErr.message || 'Error al crear el usuario');
-        }
+      } catch (keycloakErr: any) {
+        console.error('Error al crear usuario en Keycloak:', keycloakErr);
+        setError(`Error al crear usuario en Keycloak: ${keycloakErr.message || 'Error desconocido'}`);
       }
     } catch (err: any) {
       console.error('Error general al crear usuario:', err);
