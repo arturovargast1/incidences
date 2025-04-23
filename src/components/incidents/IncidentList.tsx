@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Incident } from '../../types/incidents';
 import { INCIDENT_TYPE_NAMES, INCIDENT_STATUS_NAMES, calculateRemainingTime, calculateRemainingDays, determineSlaStatus } from '../../lib/api';
+import { useCurrentUser } from '../../lib/auth';
 
 interface IncidentListProps {
   incidents: Incident[];
@@ -25,6 +26,10 @@ export default function IncidentList({
   onPageChange
 }: IncidentListProps) {
   const [filterType, setFilterType] = useState<string>('all');
+  const { user } = useCurrentUser();
+  
+  // Check if user belongs to T1 company
+  const isT1CompanyUser = user?.company === 'T1';
   
   // Mapping of courier names to their logo paths
   const courierLogos: Record<string, string> = {
@@ -110,6 +115,12 @@ export default function IncidentList({
                     <p className="text-sm font-medium text-[var(--primary)]">{incident.incidentId}</p>
                     <p className="text-sm text-gray-800">{incident.trackingNumber} - {situacion}</p>
                     <p className="text-xs text-gray-500">Cliente: {incident.shipmentDetails?.origin?.company || incident.shipmentDetails?.destination?.contact || incident.customerName || 'Cliente'}</p>
+                    {/* Display assigned user email only for T1 company users */}
+                    {isT1CompanyUser && incident.assigned_user && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        <span className="font-medium">Usuario asignado:</span> {incident.assigned_user.email}
+                      </p>
+                    )}
                     <div className="flex items-center mt-1">
                       <span className="text-xs text-gray-500 mr-2">Paquetería:</span>
                       {(() => {
@@ -142,17 +153,35 @@ export default function IncidentList({
                       })()}
                     </div>
                     
-                    {/* Indicador de estado */}
+                    {/* Indicador de estado - show operations_status for T1 users, otherwise show status_mensajeria */}
                     <div className="mt-1">
-                      <span className={`status-tag ${
-                        incident.status_mensajeria === 'finalized' ? 'status-finalized' :
-                        incident.status_mensajeria === 'requires_action' ? 'status-requires-action' :
-                        incident.status_mensajeria === 'in_process' ? 'status-in-process' :
-                        incident.status_mensajeria === 'pending' ? 'status-pending' :
-                        'status-in-review'
-                      }`}>
-                        {INCIDENT_STATUS_NAMES[incident.status_mensajeria as keyof typeof INCIDENT_STATUS_NAMES] || incident.status_mensajeria}
-                      </span>
+                      {isT1CompanyUser && incident.operations_status ? (
+                        <span className={`status-tag ${
+                          incident.operations_status === 'finalized' ? 'status-finalized' :
+                          incident.operations_status === 'requires_action' ? 'status-requires-action' :
+                          incident.operations_status === 'in_process' ? 'status-in-process' :
+                          incident.operations_status === 'pending' ? 'status-pending' :
+                          incident.operations_status === 'additional_information' ? 'status-in-review' :
+                          incident.operations_status === 'review' ? 'status-in-review' :
+                          incident.operations_status === 'reopen' ? 'status-requires-action' :
+                          'status-in-review'
+                        }`}>
+                          {incident.operations_status === 'additional_information' ? 'Información adicional' :
+                           incident.operations_status === 'review' ? 'Revisión' :
+                           incident.operations_status === 'reopen' ? 'Reapertura' :
+                           INCIDENT_STATUS_NAMES[incident.operations_status as keyof typeof INCIDENT_STATUS_NAMES] || incident.operations_status}
+                        </span>
+                      ) : (
+                        <span className={`status-tag ${
+                          incident.status_mensajeria === 'finalized' ? 'status-finalized' :
+                          incident.status_mensajeria === 'requires_action' ? 'status-requires-action' :
+                          incident.status_mensajeria === 'in_process' ? 'status-in-process' :
+                          incident.status_mensajeria === 'pending' ? 'status-pending' :
+                          'status-in-review'
+                        }`}>
+                          {INCIDENT_STATUS_NAMES[incident.status_mensajeria as keyof typeof INCIDENT_STATUS_NAMES] || incident.status_mensajeria}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center">
@@ -179,9 +208,10 @@ export default function IncidentList({
                           {slaStatus.label}
                         </span>
                       </div>
-                      <span className="text-xs font-medium text-gray-700">
-                        Límite: {new Date(incident.deadline).toLocaleDateString()} {new Date(incident.deadline).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                      </span>
+                      <div className="text-xs font-medium text-gray-700">
+                        <div>Creado: {new Date(incident.createdAt).toLocaleDateString()}</div>
+                        <div>Límite: {new Date(incident.deadline).toLocaleDateString()} {new Date(incident.deadline).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                      </div>
                     </div>
                   </div>
                 </div>

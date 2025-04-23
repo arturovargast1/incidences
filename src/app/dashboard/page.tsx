@@ -4,17 +4,13 @@ import { useState, useEffect } from 'react';
 import AuthGuard from '../../components/AuthGuard';
 import AppLayout from '../../components/AppLayout';
 import StatusCard from '../../components/dashboard/StatusCard';
-import IncidenceRateCard from '../../components/dashboard/IncidenceRateCard';
-import CourierPerformanceCard from '../../components/dashboard/CourierPerformanceCard';
-import SingleCourierCard from '../../components/dashboard/SingleCourierCard';
-import KeycloakStatus from '../../components/KeycloakStatus';
 import { useIncidents } from '../../hooks/useIncidents';
 import { useIncidenceStats } from '../../hooks/useIncidenceStats';
 import { CARRIER_NAMES, INCIDENT_TYPE_NAMES, INCIDENT_STATUS_NAMES } from '../../lib/api';
 import Link from 'next/link';
 
 export default function Dashboard() {
-  const [selectedCarrier, setSelectedCarrier] = useState<number>(0); // Todas las paqueterías por defecto
+  const [selectedCarrier, setSelectedCarrier] = useState<number>(0);
   const [stats, setStats] = useState({
     incidentRate: '0%',
     slaCompliance: '100%',
@@ -52,19 +48,19 @@ export default function Dashboard() {
   const loading = incidentsLoading || statsLoading;
   const error = incidentsError || statsError;
 
-  // Calcular estadísticas basadas en los datos reales
+  // Calculate stats based on incidents data
   useEffect(() => {
     if (incidents.length > 0) {
-      // Contadores para cada estado
+      // Status counters
       const requiresAction = incidents.filter(inc => inc.status_mensajeria === 'requires_action').length;
       const pending = incidents.filter(inc => inc.status_mensajeria === 'pending').length;
       const inProcess = incidents.filter(inc => inc.status_mensajeria === 'in_process').length;
       const finalized = incidents.filter(inc => inc.status_mensajeria === 'finalized').length;
 
-      // Calcular tasa de incidencias (asumimos 1% como base y ajustamos según la proporción)
+      // Incident rate calculation
       const incidentRate = (1 + (incidents.length / 100)).toFixed(2) + '%';
       
-      // Tiempo promedio basado en resolutionTime de las incidencias finalizadas
+      // Resolution time calculation
       const resolvedIncidents = incidents.filter(inc => inc.resolution && inc.resolution.status === 'approved');
       let avgTime = '0 hrs';
       if (resolvedIncidents.length > 0) {
@@ -74,7 +70,7 @@ export default function Dashboard() {
         avgTime = avgHours.toFixed(1) + ' hrs';
       }
 
-      // Calcular SLA compliance basado en deadlines
+      // SLA compliance calculation
       const now = new Date();
       const pastDeadlineCount = incidents.filter(inc => {
         if (!inc.deadline) return false;
@@ -82,21 +78,18 @@ export default function Dashboard() {
         return deadlineDate < now && inc.status_mensajeria !== 'finalized';
       }).length;
       
-      // Calcular porcentaje de SLA compliance
       const slaCompliance = incidents.length > 0 
         ? (100 - (pastDeadlineCount / incidents.length * 100)).toFixed(1) + '%' 
         : '100.0%';
         
-      // Calcular tiempo promedio hasta la primera acción
+      // First action time calculation
       let totalFirstActionTime = 0;
       let incidentsWithFirstAction = 0;
       
       incidents.forEach(inc => {
         if (inc.timeline && inc.timeline.length > 1 && inc.createdAt) {
-          // First entry in timeline is usually the creation event
-          // Second entry would be the first action
           const creationDate = new Date(inc.createdAt);
-          const firstActionEvent = inc.timeline[1]; // Get the second event (index 1)
+          const firstActionEvent = inc.timeline[1];
           
           if (firstActionEvent && firstActionEvent.timestamp) {
             const firstActionDate = new Date(firstActionEvent.timestamp);
@@ -108,7 +101,6 @@ export default function Dashboard() {
         }
       });
       
-      // Calculate average time to first action
       const firstActionTime = incidentsWithFirstAction > 0
         ? (totalFirstActionTime / incidentsWithFirstAction).toFixed(1) + ' hrs'
         : '0 hrs';
@@ -131,17 +123,12 @@ export default function Dashboard() {
     <AuthGuard>
       <AppLayout notificationCount={stats.requiresAction}>
         <div className="p-6 animate-slide-in-up">
-          {/* Header con título y descripción */}
+          {/* Header */}
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-[var(--gray-900)] mb-2">Dashboard de Incidencias</h1>
           </div>
           
-          {/* Keycloak Status for development/testing */}
-          <div className="mb-8">
-            <KeycloakStatus />
-          </div>
-          
-          {/* Selector de paquetería y botón de actualización */}
+          {/* Carrier selector and refresh button */}
           <div className="tienvios-card p-6 mb-8 border border-[var(--gray-200)]">
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
               <div className="w-full md:w-72">
@@ -190,9 +177,9 @@ export default function Dashboard() {
             </div>
           </div>
           
-          {/* KPIs principales */}
+          {/* Main KPIs */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {/* Enhanced Total Incidencias card with data from Tasa de incidencias */}
+            {/* Total Incidents card */}
             <div className="tienvios-card p-6 hover:shadow-lg transition-all duration-300 border border-[var(--gray-200)]">
               <div className="flex items-start justify-between">
                 <div>
@@ -211,7 +198,7 @@ export default function Dashboard() {
                 </div>
               </div>
               
-              {/* Added information from Tasa de incidencias card */}
+              {/* Incident rate information */}
               {incidenceStats && (
               <div className="mt-4">
                 <div className="flex justify-between items-center mb-1">
@@ -228,22 +215,23 @@ export default function Dashboard() {
                      incidenceStats.overallPercentage.toFixed(2) : '0.00'}%
                   </span>
                 </div>
-                  <div className="w-full bg-[var(--gray-200)] rounded-full h-2 shadow-inner">
-                    <div 
-                      className="bg-red-500 h-2 rounded-full" 
-                      style={{ width: `${incidenceStats.overallPercentage || 0}%` }}
-                    ></div>
-                  </div>
-                  <p className="mt-1 text-xs text-[var(--gray-600)]">
-                    {incidenceStats.isFiltered && incidenceStats.selectedCourier 
-                      ? `${incidenceStats.selectedCourier.total_incidents} de ${incidenceStats.selectedCourier.total_records} guías`
-                      : `${incidenceStats.totalIncidents || 9} de ${incidenceStats.totalGuides || 2943} guías`
-                    }
-                  </p>
+                <div className="w-full bg-[var(--gray-200)] rounded-full h-2 shadow-inner">
+                  <div 
+                    className="bg-red-500 h-2 rounded-full" 
+                    style={{ width: `${incidenceStats.overallPercentage || 0}%` }}
+                  ></div>
                 </div>
+                <p className="mt-1 text-xs text-[var(--gray-600)]">
+                  {incidenceStats.isFiltered && incidenceStats.selectedCourier 
+                    ? `${incidenceStats.selectedCourier.total_incidents} de ${incidenceStats.selectedCourier.total_records} guías`
+                    : `${incidenceStats.totalIncidents || 9} de ${incidenceStats.totalGuides || 2943} guías`
+                  }
+                </p>
+              </div>
               )}
             </div>
             
+            {/* Out of time card */}
             <div className="tienvios-card p-6 hover:shadow-lg transition-all duration-300 border border-[var(--gray-200)]">
               <div className="flex items-start justify-between">
                 <div>
@@ -270,6 +258,7 @@ export default function Dashboard() {
               </div>
             </div>
             
+            {/* First action card */}
             <div className="tienvios-card p-6 hover:shadow-lg transition-all duration-300 border border-[var(--gray-200)]">
               <div className="flex items-start justify-between">
                 <div>
@@ -282,9 +271,9 @@ export default function Dashboard() {
                   </svg>
                 </div>
               </div>
-              {/* Comparison with previous period removed */}
             </div>
             
+            {/* Resolution time card */}
             <div className="tienvios-card p-6 hover:shadow-lg transition-all duration-300 border border-[var(--gray-200)]">
               <div className="flex items-start justify-between">
                 <div>
@@ -297,14 +286,12 @@ export default function Dashboard() {
                   </svg>
                 </div>
               </div>
-              {/* Comparison with previous period removed */}
             </div>
           </div>
           
-          {/* Tasa de incidencias card removed as requested */}
-          
-          {/* Gráficos */}
+          {/* Graphs section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            {/* Latest incidents */}
             <div className="tienvios-card overflow-hidden">
               <div className="p-6 border-b border-[var(--gray-200)]">
                 <div className="flex justify-between items-center">
@@ -370,6 +357,7 @@ export default function Dashboard() {
               </div>
             </div>
             
+            {/* Incidents by type */}
             <div className="tienvios-card overflow-hidden">
               <div className="p-6 border-b border-[var(--gray-200)]">
                 <h2 className="text-lg font-bold text-[var(--gray-900)]">Distribución por Tipo</h2>
@@ -397,9 +385,8 @@ export default function Dashboard() {
                 ) : incidenceStats?.incidentsByType?.length ? (
                   <div className="space-y-4">
                     {incidenceStats.incidentsByType
-                      .sort((a, b) => b.count - a.count) // Sort by count in descending order
+                      .sort((a, b) => b.count - a.count)
                       .map((typeData) => {
-                        // Get the display name from the INCIDENT_TYPE_NAMES mapping
                         const displayName = INCIDENT_TYPE_NAMES[typeData.incident_type as keyof typeof INCIDENT_TYPE_NAMES] || 
                                           typeData.incident_type.replace(/_/g, ' ');
                         
@@ -443,7 +430,7 @@ export default function Dashboard() {
             </div>
           </div>
           
-          {/* Estado actual de incidencias */}
+          {/* Current incidents status */}
           <div className="tienvios-card p-6 mb-8">
             <div className="mb-4">
               <h2 className="text-lg font-bold text-[var(--gray-900)]">Estado Actual de Incidencias</h2>
@@ -459,136 +446,70 @@ export default function Dashboard() {
                 <div className="col-span-full flex flex-col items-center justify-center text-red-500 py-6">
                   <svg className="w-12 h-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+                    </svg>
                   <p className="text-center">Error al cargar datos: {error}</p>
                 </div>
               ) : (
-                <>
-                  {/* Map through incident status data or use default statuses if not available */}
-                  {incidenceStats?.incidentsByStatus?.length ? (
-                    <>
-                      {/* Generate status cards for existing API statuses */}
-                      {['requires_action', 'pending', 'in_process', 'finalized'].map(statusKey => {
-                        const statusData = incidenceStats.incidentsByStatus?.find(s => s.status === statusKey);
-                        
-                        let title, bgColor, textColor, borderColor;
-                        
-                        // Define properties based on status
-                        switch(statusKey) {
-                          case 'requires_action':
-                            title = "Requieren Acción";
-                            bgColor = "bg-[var(--status-requires-action)]";
-                            textColor = "text-[var(--status-requires-action-text)]";
-                            borderColor = "border-[var(--status-requires-action-border)]";
-                            break;
-                          case 'pending':
-                            title = "Pendientes";
-                            bgColor = "bg-[var(--status-pending)]";
-                            textColor = "text-[var(--status-pending-text)]";
-                            borderColor = "border-[var(--status-pending-border)]";
-                            break;
-                          case 'in_process':
-                            title = "En Proceso";
-                            bgColor = "bg-[var(--status-in-process)]";
-                            textColor = "text-[var(--status-in-process-text)]";
-                            borderColor = "border-[var(--status-in-process-border)]";
-                            break;
-                          case 'finalized':
-                            title = "Finalizadas";
-                            bgColor = "bg-[var(--status-finalized)]";
-                            textColor = "text-[var(--status-finalized-text)]";
-                            borderColor = "border-[var(--status-finalized-border)]";
-                            break;
-                          default:
-                            title = statusKey;
-                            bgColor = "bg-gray-100";
-                            textColor = "text-gray-800";
-                            borderColor = "border-gray-200";
-                        }
-                        
-                        return (
-                          <StatusCard 
-                            key={statusKey}
-                            title={title}
-                            count={statusData?.count || 0}
-                            bgColor={bgColor}
-                            textColor={textColor}
-                            borderColor={borderColor}
-                            percentageOfIncidents={statusData?.percentage_of_incidents || 0}
-                          />
-                        );
-                      })}
-                    </>
-                  ) : (
-                    <>
-                      {/* Default cards if API doesn't return data */}
-                      <StatusCard 
-                        title="Requieren Acción"
-                        count={0}
-                        bgColor="bg-[var(--status-requires-action)]"
-                        textColor="text-[var(--status-requires-action-text)]"
-                        borderColor="border-[var(--status-requires-action-border)]"
-                      />
+                <>{incidenceStats?.incidentsByStatus?.length ? (
+                  <>
+                    {['requires_action', 'pending', 'in_process', 'finalized'].map(statusKey => {
+                      const statusData = incidenceStats.incidentsByStatus?.find(s => s.status === statusKey);
                       
-                      <StatusCard 
-                        title="Pendientes"
-                        count={0}
-                        bgColor="bg-[var(--status-pending)]"
-                        textColor="text-[var(--status-pending-text)]"
-                        borderColor="border-[var(--status-pending-border)]"
-                      />
+                      let title, bgColor, textColor, borderColor;
                       
-                      <StatusCard 
-                        title="En Proceso"
-                        count={0}
-                        bgColor="bg-[var(--status-in-process)]"
-                        textColor="text-[var(--status-in-process-text)]"
-                        borderColor="border-[var(--status-in-process-border)]"
-                      />
+                      switch(statusKey) {
+                        case 'requires_action':
+                          title = "Requieren Acción";
+                          bgColor = "bg-[var(--status-requires-action)]";
+                          textColor = "text-[var(--status-requires-action-text)]";
+                          borderColor = "border-[var(--status-requires-action-border)]";
+                          break;
+                        case 'pending':
+                          title = "Pendientes";
+                          bgColor = "bg-[var(--status-pending)]";
+                          textColor = "text-[var(--status-pending-text)]";
+                          borderColor = "border-[var(--status-pending-border)]";
+                          break;
+                        case 'in_process':
+                          title = "En Proceso";
+                          bgColor = "bg-[var(--status-in-process)]";
+                          textColor = "text-[var(--status-in-process-text)]";
+                          borderColor = "border-[var(--status-in-process-border)]";
+                          break;
+                        case 'finalized':
+                          title = "Finalizadas";
+                          bgColor = "bg-[var(--status-finalized)]";
+                          textColor = "text-[var(--status-finalized-text)]";
+                          borderColor = "border-[var(--status-finalized-border)]";
+                          break;
+                        default:
+                          title = statusKey;
+                          bgColor = "bg-gray-100";
+                          textColor = "text-gray-800";
+                          borderColor = "border-gray-200";
+                      }
                       
-                      <StatusCard 
-                        title="Finalizadas"
-                        count={0}
-                        bgColor="bg-[var(--status-finalized)]"
-                        textColor="text-[var(--status-finalized-text)]"
-                        borderColor="border-[var(--status-finalized-border)]"
-                      />
-                    </>
-                  )}
-                </>
+                      return (
+                        <StatusCard 
+                          key={statusKey}
+                          title={title}
+                          count={statusData?.count || 0}
+                          bgColor={bgColor}
+                          textColor={textColor}
+                          borderColor={borderColor}
+                          percentageOfIncidents={statusData?.percentage_of_incidents || 0}
+                        />
+                      );
+                    })}
+                  </>
+                ) : (
+                  <div className="col-span-full flex justify-center py-6">
+                    <p className="text-gray-500">No hay datos disponibles</p>
+                  </div>
+                )}</>
               )}
             </div>
           </div>
-          
-          {/* Desempeño por paquetería card moved to bottom */}
-          {statsLoading ? (
-            <div className="tienvios-card p-6 mb-6 flex justify-center items-center">
-              <div className="h-10 w-10 animate-spin rounded-full border-b-2 border-[var(--primary)]"></div>
-            </div>
-          ) : statsError ? (
-            <div className="tienvios-card p-6 mb-6 flex flex-col items-center justify-center text-red-500">
-              <svg className="w-12 h-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p className="text-center">Error al cargar estadísticas: {statsError}</p>
-              <button 
-                onClick={refreshStats}
-                className="mt-4 tienvios-button-secondary text-sm"
-              >
-                Reintentar
-              </button>
-            </div>
-          ) : incidenceStats ? (
-            <div className="mb-6">
-              <h2 className="text-lg font-bold text-[var(--gray-900)] mb-4">Desempeño por Paquetería</h2>
-              {/* Courier performance card or single courier card */}
-              {incidenceStats.isFiltered && incidenceStats.selectedCourier ? (
-                <SingleCourierCard courier={incidenceStats.selectedCourier} />
-              ) : (
-                <CourierPerformanceCard couriers={incidenceStats.couriers} />
-              )}
-            </div>
-          ) : null}
         </div>
       </AppLayout>
     </AuthGuard>

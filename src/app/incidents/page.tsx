@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import AuthGuard from '../../components/AuthGuard';
 import AppLayout from '../../components/AppLayout';
+import { useCurrentUser } from '../../lib/auth';
 import { useIncidents } from '../../hooks/useIncidents';
 import { 
   CARRIER_NAMES, 
@@ -26,6 +27,8 @@ import { Incident } from '../../types/incidents';
 
 export default function IncidentsPage() {
   const router = useRouter();
+  const { user } = useCurrentUser();
+  const isT1CompanyUser = user?.company === 'T1';
   const [selectedCarrier, setSelectedCarrier] = useState<number>(0);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -611,6 +614,7 @@ export default function IncidentsPage() {
                       <th>Tiempo SLA</th>
                       <th>Paquetería</th>
                       <th>Situación actual</th>
+                      {isT1CompanyUser && <th>Usuario asignado</th>}
                       <th>Acciones</th>
                     </tr>
                   </thead>
@@ -633,17 +637,52 @@ export default function IncidentsPage() {
                             <div className="text-xs text-gray-500">Creado {formatDate(incident.createdAt || '')}</div>
                           </td>
                           <td>
-                            {incident.status_mensajeria === 'requires_action' && (
-                              <span className="status-tag status-requires-action">Requiere acción</span>
-                            )}
-                            {incident.status_mensajeria === 'in_process' && (
-                              <span className="status-tag status-in-process">En proceso</span>
-                            )}
-                            {incident.status_mensajeria === 'finalized' && (
-                              <span className="status-tag status-finalized">Finalizada</span>
-                            )}
-                            {incident.status_mensajeria === 'pending' && (
-                              <span className="status-tag status-pending">Pendiente</span>
+                            {/* Show operations_status for T1 company users, otherwise show status_carrier */}
+                            {isT1CompanyUser ? (
+                              <>
+                                {incident.operations_status === 'requires_action' && (
+                                  <span className="status-tag status-requires-action">Requiere acción</span>
+                                )}
+                                {incident.operations_status === 'in_process' && (
+                                  <span className="status-tag status-in-process">En proceso</span>
+                                )}
+                                {incident.operations_status === 'finalized' && (
+                                  <span className="status-tag status-finalized">Finalizada</span>
+                                )}
+                                {incident.operations_status === 'pending' && (
+                                  <span className="status-tag status-pending">Pendiente</span>
+                                )}
+                                {incident.operations_status === 'in_review' && (
+                                  <span className="status-tag status-in-review">En revisión</span>
+                                )}
+                                {incident.operations_status === 'additional_information' && (
+                                  <span className="status-tag status-in-review">Información adicional</span>
+                                )}
+                                {incident.operations_status === 'review' && (
+                                  <span className="status-tag status-in-review">Revisión</span>
+                                )}
+                                {incident.operations_status === 'reopen' && (
+                                  <span className="status-tag status-requires-action">Reapertura</span>
+                                )}
+                              </>
+                            ) : (
+                              <>
+                                {incident.status_mensajeria === 'requires_action' && (
+                                  <span className="status-tag status-requires-action">Requiere acción</span>
+                                )}
+                                {incident.status_mensajeria === 'in_process' && (
+                                  <span className="status-tag status-in-process">En proceso</span>
+                                )}
+                                {incident.status_mensajeria === 'finalized' && (
+                                  <span className="status-tag status-finalized">Finalizada</span>
+                                )}
+                                {incident.status_mensajeria === 'pending' && (
+                                  <span className="status-tag status-pending">Pendiente</span>
+                                )}
+                                {incident.status_mensajeria === 'in_review' && (
+                                  <span className="status-tag status-in-review">En revisión</span>
+                                )}
+                              </>
                             )}
                           </td>
                           <td>
@@ -706,6 +745,11 @@ export default function IncidentsPage() {
                             })()}
                           </td>
                           <td>{getSituacion(incident.type)}</td>
+                          {isT1CompanyUser && (
+                            <td>
+                              {incident.assigned_user?.email || "-"}
+                            </td>
+                          )}
                           <td>
                             <button className="tienvios-button-secondary text-sm px-3 py-1">
                               Ver detalle

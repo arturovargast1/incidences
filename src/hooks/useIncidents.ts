@@ -51,6 +51,7 @@ export function useIncidents(carrierId: number) {
               carrier: raw.carrier || rawIncident.carrier,
               status_mensajeria: raw.status_carrier || rawIncident.status_mensajeria || rawIncident.status,
               status: rawIncident.status,
+              operations_status: raw.operations_status || rawIncident.operations_status,
               type: rawIncident.type,
               priority: rawIncident.priority,
               createdAt: raw.created_at || rawIncident.createdAt,
@@ -73,7 +74,10 @@ export function useIncidents(carrierId: number) {
               })),
               
               // Mantener actionDetails
-              actionDetails: raw.action_details || rawIncident.actionDetails
+              actionDetails: raw.action_details || rawIncident.actionDetails,
+              
+              // Add assigned_user if it exists in the API response
+              assigned_user: raw.assigned_user || rawIncident.assigned_user
             };
             
             // Extraer nombre del cliente de los datos de envío si existe

@@ -35,7 +35,10 @@ export type IncidentStatus =
   | 'in_process'
   | 'approved'
   | 'finalized'
-  | 'pending';  // Añadir el nuevo estatus "pending"
+  | 'pending'
+  | 'additional_information'  // Información adicional
+  | 'review'  // Revisión
+  | 'reopen';  // Reapertura
 
 export interface ShipmentDetails {
   origin: {
@@ -88,8 +91,12 @@ export interface Incident {
     id: number;
     name: string;
   };
+  assigned_user?: {
+    email: string;
+  };
   status_mensajeria: IncidentStatus;
   status?: IncidentStatus; // Mantener por compatibilidad retroactiva
+  operations_status?: IncidentStatus; // Estado de operaciones (visible solo para usuarios T1)
   type: IncidentType;
   priority?: 'low' | 'medium' | 'high';
   createdAt: string;

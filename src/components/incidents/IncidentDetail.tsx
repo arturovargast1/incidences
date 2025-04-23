@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Incident } from '../../types/incidents';
 import { INCIDENT_STATUS_NAMES, INCIDENT_TYPE_NAMES, formatDate, calculateRemainingDays, determineSlaStatus } from '../../lib/api';
 import PhotoGallery from './PhotoGallery';
+import { useCurrentUser } from '../../lib/auth';
 
 // Mapa de traducciones para los campos comunes
 const FIELD_TRANSLATIONS: Record<string, string> = {
@@ -77,6 +78,10 @@ export default function IncidentDetail({ incident, onStatusChange }: IncidentDet
   const [currentAddress, setCurrentAddress] = useState<any>(null);
   const [newAddressData, setNewAddressData] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'details' | 'timeline'>('details');
+  const { user } = useCurrentUser();
+  
+  // Check if user belongs to T1 company
+  const isT1CompanyUser = user?.company === 'T1';
   
   // Manejar click en el botón 'Iniciar Proceso'
   const handleStartProcess = () => {
@@ -399,7 +404,24 @@ export default function IncidentDetail({ incident, onStatusChange }: IncidentDet
           <div>
             <div className="flex items-center">
               <h2 className="text-xl font-bold text-gray-900">{incident.incidentId}</h2>
-              {incident.status_mensajeria && (
+              {/* Show operations_status for T1 company users, otherwise show status_mensajeria */}
+              {isT1CompanyUser && incident.operations_status ? (
+                <span className={`ml-3 status-tag ${
+                  incident.operations_status === 'requires_action' ? 'status-requires-action' :
+                  incident.operations_status === 'in_process' ? 'status-in-process' :
+                  incident.operations_status === 'finalized' ? 'status-finalized' :
+                  incident.operations_status === 'pending' ? 'status-pending' :
+                  incident.operations_status === 'additional_information' ? 'status-in-review' :
+                  incident.operations_status === 'review' ? 'status-in-review' :
+                  incident.operations_status === 'reopen' ? 'status-requires-action' :
+                  'status-in-review'
+                }`}>
+                  {incident.operations_status === 'additional_information' ? 'Información adicional' :
+                   incident.operations_status === 'review' ? 'Revisión' :
+                   incident.operations_status === 'reopen' ? 'Reapertura' :
+                   INCIDENT_STATUS_NAMES[incident.operations_status as keyof typeof INCIDENT_STATUS_NAMES] || incident.operations_status}
+                </span>
+              ) : incident.status_mensajeria && (
                 <span className={`ml-3 status-tag ${
                   incident.status_mensajeria === 'requires_action' ? 'status-requires-action' :
                   incident.status_mensajeria === 'in_process' ? 'status-in-process' :
@@ -429,7 +451,10 @@ export default function IncidentDetail({ incident, onStatusChange }: IncidentDet
                   {slaStatus.label}
                 </span>
               </div>
-              <div className="text-xs text-gray-600">{formattedDeadline}</div>
+              <div className="text-xs text-gray-600">
+                <div>Creado: {formatDate(incident.createdAt || '')}</div>
+                <div>Límite: {formattedDeadline}</div>
+              </div>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2 shadow-inner overflow-hidden">
               <div 
@@ -485,9 +510,15 @@ export default function IncidentDetail({ incident, onStatusChange }: IncidentDet
               {/* Etapa 1: Requiere acción */}
               <div className="flex flex-col items-center z-10">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
-                  incident.status_mensajeria === 'requires_action' ? 'bg-red-600 text-white' : 
-                  (incident.status_mensajeria === 'in_process' || incident.status_mensajeria === 'finalized') ? 'bg-gray-400 text-white' : 
-                  'bg-white border-2 border-gray-300 text-gray-500'
+                  isT1CompanyUser && incident.operations_status ? 
+                    (incident.operations_status === 'requires_action' || incident.operations_status === 'reopen') ? 'bg-red-600 text-white' : 
+                    (incident.operations_status === 'in_process' || incident.operations_status === 'additional_information' || 
+                     incident.operations_status === 'review' || incident.operations_status === 'finalized') ? 'bg-gray-400 text-white' : 
+                    'bg-white border-2 border-gray-300 text-gray-500'
+                  :
+                    incident.status_mensajeria === 'requires_action' ? 'bg-red-600 text-white' : 
+                    (incident.status_mensajeria === 'in_process' || incident.status_mensajeria === 'finalized') ? 'bg-gray-400 text-white' : 
+                    'bg-white border-2 border-gray-300 text-gray-500'
                 }`}>
                   1
                 </div>
@@ -497,9 +528,15 @@ export default function IncidentDetail({ incident, onStatusChange }: IncidentDet
               {/* Etapa 2: En proceso */}
               <div className="flex flex-col items-center z-10">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
-                  incident.status_mensajeria === 'in_process' ? 'bg-blue-600 text-white' : 
-                  incident.status_mensajeria === 'finalized' ? 'bg-gray-400 text-white' : 
-                  'bg-white border-2 border-gray-300 text-gray-500'
+                  isT1CompanyUser && incident.operations_status ? 
+                    (incident.operations_status === 'in_process' || incident.operations_status === 'additional_information' || 
+                     incident.operations_status === 'review') ? 'bg-blue-600 text-white' : 
+                    incident.operations_status === 'finalized' ? 'bg-gray-400 text-white' : 
+                    'bg-white border-2 border-gray-300 text-gray-500'
+                  :
+                    incident.status_mensajeria === 'in_process' ? 'bg-blue-600 text-white' : 
+                    incident.status_mensajeria === 'finalized' ? 'bg-gray-400 text-white' : 
+                    'bg-white border-2 border-gray-300 text-gray-500'
                 }`}>
                   2
                 </div>
@@ -509,8 +546,12 @@ export default function IncidentDetail({ incident, onStatusChange }: IncidentDet
               {/* Etapa 3: Finalizado */}
               <div className="flex flex-col items-center z-10">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
-                  incident.status_mensajeria === 'finalized' ? 'bg-green-600 text-white' : 
-                  'bg-white border-2 border-gray-300 text-gray-500'
+                  isT1CompanyUser && incident.operations_status ? 
+                    incident.operations_status === 'finalized' ? 'bg-green-600 text-white' : 
+                    'bg-white border-2 border-gray-300 text-gray-500'
+                  :
+                    incident.status_mensajeria === 'finalized' ? 'bg-green-600 text-white' : 
+                    'bg-white border-2 border-gray-300 text-gray-500'
                 }`}>
                   3
                 </div>

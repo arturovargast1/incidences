@@ -229,6 +229,15 @@ export function getKeycloakToken(): string | null {
         if (Date.now() >= expiresAt) {
           // Token expired, should trigger refresh
           console.warn('Keycloak token expired');
+          
+          // Attempt to refresh the token in the background
+          // Note: We don't return the refreshed token directly to avoid
+          // blocking the current operation
+          refreshKeycloakToken().catch(e => {
+            console.error('Failed to refresh expired Keycloak token:', e);
+          });
+          
+          // Remove the expired token
           localStorage.removeItem('keycloak_token');
           return null;
         }
