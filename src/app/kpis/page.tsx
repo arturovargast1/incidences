@@ -1,14 +1,42 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import AuthGuard from '../../components/AuthGuard';
 import AppLayout from '../../components/AppLayout';
-import { useKpisStats, AgentPerformance } from '../../hooks/useKpisStats';
+import { useKpisStats } from '../../hooks/useKpisStats';
 import TimeMetricsCard from '../../components/kpis/TimeMetricsCard';
 import KpisFilters from '../../components/kpis/KpisFilters';
 import PerformanceTable from '../../components/kpis/PerformanceTable';
+import { useCurrentUser } from '../../lib/auth';
 
 export default function KpisPage() {
+  const router = useRouter();
+  const { user, loading: userLoading } = useCurrentUser();
+  
+  // Redirect non-T1 users to dashboard
+  useEffect(() => {
+    if (!userLoading && user && user.company !== 'T1') {
+      router.push('/dashboard');
+    }
+  }, [user, userLoading, router]);
+  
+  // If user is loading or not from T1, don't render the actual content
+  if (userLoading || (user && user.company !== 'T1')) {
+    return (
+      <AuthGuard>
+        <AppLayout>
+          <div className="p-4 md:p-8">
+            <div className="max-w-7xl mx-auto">
+              <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--primary)]"></div>
+              </div>
+            </div>
+          </div>
+        </AppLayout>
+      </AuthGuard>
+    );
+  }
   const [selectedAgentEmail, setSelectedAgentEmail] = useState<string>('');
   const { filteredData, loading, error, refreshData } = useKpisStats(selectedAgentEmail);
 
