@@ -123,7 +123,7 @@ export function useKpisStats(selectedAgentEmail: string = '') {
     } finally {
       setLoading(false);
     }
-  }, [refreshTrigger, selectedAgentEmail]);
+  }, [selectedAgentEmail]); // Remove refreshTrigger from dependencies as it's not used in the function body
 
   // Obtener datos cuando cambien las dependencias
   useEffect(() => {

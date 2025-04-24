@@ -438,7 +438,10 @@ export const INCIDENT_STATUS_NAMES: Record<IncidentStatus, string> = {
   'in_process': 'En proceso',
   'approved': 'Aprobado',
   'finalized': 'Finalizado',
-  'pending': 'Pendiente'
+  'pending': 'Pendiente',
+  'additional_information': 'Información adicional',
+  'review': 'Revisión',
+  'reopen': 'Reapertura'
 };
 
 /**

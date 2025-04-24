@@ -13,6 +13,8 @@ import { useCurrentUser } from '../../lib/auth';
 export default function KpisPage() {
   const router = useRouter();
   const { user, loading: userLoading } = useCurrentUser();
+  const [selectedAgentEmail, setSelectedAgentEmail] = useState<string>('');
+  const { filteredData, loading, error, refreshData } = useKpisStats(selectedAgentEmail);
   
   // Redirect non-T1 users to dashboard
   useEffect(() => {
@@ -37,8 +39,6 @@ export default function KpisPage() {
       </AuthGuard>
     );
   }
-  const [selectedAgentEmail, setSelectedAgentEmail] = useState<string>('');
-  const { filteredData, loading, error, refreshData } = useKpisStats(selectedAgentEmail);
 
   // Prepare data for the agent performance table
   const agentTableData = filteredData?.agentPerformance.map(agent => ({

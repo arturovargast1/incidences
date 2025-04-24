@@ -229,7 +229,7 @@ export default function TestTokenRefresh() {
               </p>
               
               <p className="bg-yellow-100 p-3 rounded text-yellow-800 border border-yellow-200">
-                <strong>Note:</strong> If the 30-minute refresh token expires, the user will need to log in again. The system doesn't currently implement automatic re-login.
+                <strong>Note:</strong> If the 30-minute refresh token expires, the user will need to log in again. The system doesn&apos;t currently implement automatic re-login.
               </p>
             </div>
           </div>

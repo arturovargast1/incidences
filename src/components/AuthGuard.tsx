@@ -59,7 +59,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
         return () => clearInterval(intervalId);
       }
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isLoading, router, BYPASS_AUTH, isUserAuthenticated]);
 
   // Verificar token en cada cambio de ruta o página
   useEffect(() => {
@@ -78,7 +78,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     return () => {
       window.removeEventListener('focus', handleRouteChange);
     };
-  }, [router]);
+  }, [router, BYPASS_AUTH, isUserAuthenticated]);
 
   if (!BYPASS_AUTH && (isLoading || !authChecked)) {
     return (

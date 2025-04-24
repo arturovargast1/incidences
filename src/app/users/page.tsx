@@ -11,6 +11,7 @@ import { useCurrentUser } from '@/lib/auth';
 export default function UsersPage() {
   const router = useRouter();
   const { user, loading: userLoading } = useCurrentUser();
+  const [showCreateForm, setShowCreateForm] = useState(false);
   
   // Redirect non-T1 users to dashboard
   useEffect(() => {
@@ -35,7 +36,6 @@ export default function UsersPage() {
       </AuthGuard>
     );
   }
-  const [showCreateForm, setShowCreateForm] = useState(false);
 
   const handleCreateUser = () => {
     setShowCreateForm(true);

@@ -132,7 +132,7 @@ export function useIncidents(carrierId: number) {
     } finally {
       setLoading(false);
     }
-  }, [carrierId, currentPage, pageSize, refreshTrigger]);
+  }, [carrierId, currentPage, pageSize]); // Remove refreshTrigger from dependencies as it's not used in the function body
 
   // Función para actualizar una incidencia
   const handleUpdateIncident = async (updateData: IncidentUpdateRequest | string) => {

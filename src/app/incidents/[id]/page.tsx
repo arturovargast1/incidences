@@ -144,7 +144,7 @@ export default function IncidentDetailPage({ params }: { params: any }) {
         reloadIncident();
       }
     }
-  }, [params.id, searchParams]);
+  }, [params.id, searchParams, reloadIncident]);
   
   const handleStatusChange = async (newStatus: string) => {
     if (!incident) return;

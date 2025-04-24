@@ -167,7 +167,7 @@ export function useIncidenceStats(selectedCarrierId: number = 0) {
     } finally {
       setLoading(false);
     }
-  }, [refreshTrigger, selectedCarrierId]);
+  }, [selectedCarrierId]); // Remove refreshTrigger from dependencies as it's not used in the function body
 
   // Fetch stats when dependencies change
   useEffect(() => {

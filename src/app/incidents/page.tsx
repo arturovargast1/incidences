@@ -150,6 +150,24 @@ export default function IncidentsPage() {
     setSlaCounts({ inTime: inTimeCount, expired: expiredCount });
   }, [incidents, searchTerm, statusFilter, typeFilter, slaFilter]);
   
+  // Calculate SLA hours for an incident
+  const getSLAHours = (incident: Incident): number => {
+    if (incident.slaHours !== undefined) return incident.slaHours;
+    
+    if (incident.deadline) {
+      const now = new Date();
+      const deadline = new Date(incident.deadline);
+      return Math.round((deadline.getTime() - now.getTime()) / (1000 * 60 * 60));
+    }
+    
+    return 48; // Default SLA hours if not specified
+  };
+  
+  // Check if SLA is expired
+  const isSLAExpired = (incident: Incident): boolean => {
+    return getSLAHours(incident) <= 0;
+  };
+  
   // Sort incidents to show expired ones first
   useEffect(() => {
     if (!filteredIncidents.length) return;
@@ -252,24 +270,6 @@ export default function IncidentsPage() {
     }
   };
   
-  // Calculate SLA hours for an incident
-  const getSLAHours = (incident: Incident): number => {
-    if (incident.slaHours !== undefined) return incident.slaHours;
-    
-    if (incident.deadline) {
-      const now = new Date();
-      const deadline = new Date(incident.deadline);
-      return Math.round((deadline.getTime() - now.getTime()) / (1000 * 60 * 60));
-    }
-    
-    return 48; // Default SLA hours if not specified
-  };
-  
-  
-  // Check if SLA is expired
-  const isSLAExpired = (incident: Incident): boolean => {
-    return getSLAHours(incident) <= 0;
-  };
   
   // Get SLA status class
   const getSLAStatusClass = (hours: number): string => {

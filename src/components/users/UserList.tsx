@@ -16,10 +16,66 @@ export default function UserList({ onCreateUser }: UserListProps) {
   const [inactivatingUserId, setInactivatingUserId] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  // Load users on component mount
   useEffect(() => {
-    loadUsers();
+    const fetchUserData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Verificar si hay un token de autenticación
+        const token = localStorage.getItem('token');
+        if (!token) {
+          setError('No hay token de autenticación. Por favor, inicie sesión nuevamente.');
+          setTimeout(() => {
+            window.location.href = '/auth/login';
+          }, 2000);
+          getMockUsers();
+          return;
+        }
+        
+        console.log('Token disponible:', token.substring(0, 15) + '...');
+        
+        try {
+          const response = await fetchUsers();
+          
+          if (response.message) {
+            setUsers(response.users || []);
+            console.log('Users loaded:', response.users);
+          } else {
+            setError('Error al cargar usuarios');
+            // Fallback to mock data
+            getMockUsers();
+          }
+        } catch (err: any) {
+          console.error('Error fetching users:', err);
+          
+          if (err.message && err.message.includes('token')) {
+            setError('Error de autenticación. Por favor, inicie sesión nuevamente.');
+            setTimeout(() => {
+              window.location.href = '/auth/login';
+            }, 2000);
+          } else if (err.message && err.message.includes('Authorization')) {
+            setError('Información de autorización no disponible. Por favor, inicie sesión nuevamente.');
+            setTimeout(() => {
+              window.location.href = '/auth/login';
+            }, 2000);
+          } else {
+            setError('Error al cargar usuarios. Se muestran datos de ejemplo.');
+          }
+          
+          // Fallback to mock data
+          getMockUsers();
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchUserData();
   }, []);
 
+  // Function to load users from API
   const loadUsers = async () => {
     try {
       setLoading(true);
@@ -32,7 +88,7 @@ export default function UserList({ onCreateUser }: UserListProps) {
         setTimeout(() => {
           window.location.href = '/auth/login';
         }, 2000);
-        useMockData();
+        getMockUsers();
         return;
       }
       
@@ -47,7 +103,7 @@ export default function UserList({ onCreateUser }: UserListProps) {
         } else {
           setError('Error al cargar usuarios');
           // Fallback to mock data
-          useMockData();
+          getMockUsers();
         }
       } catch (err: any) {
         console.error('Error fetching users:', err);
@@ -67,15 +123,15 @@ export default function UserList({ onCreateUser }: UserListProps) {
         }
         
         // Fallback to mock data
-        useMockData();
+        getMockUsers();
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const useMockData = () => {
-    // Mock data for demonstration
+  // Mock data for demonstration
+  const getMockUsers = () => {
     const mockUsers: User[] = [
       {
         user_id: '1',
