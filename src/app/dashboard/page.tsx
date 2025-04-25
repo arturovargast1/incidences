@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import AuthGuard from '../../components/AuthGuard';
 import AppLayout from '../../components/AppLayout';
 import StatusCard from '../../components/dashboard/StatusCard';
+import CourierPerformanceCard from '../../components/dashboard/CourierPerformanceCard';
 import { useIncidents } from '../../hooks/useIncidents';
 import { useIncidenceStats } from '../../hooks/useIncidenceStats';
 import { CARRIER_NAMES, INCIDENT_TYPE_NAMES, INCIDENT_STATUS_NAMES } from '../../lib/api';
@@ -562,6 +563,27 @@ export default function Dashboard() {
                 )}</>
               )}
             </div>
+          </div>
+          
+          {/* Courier Performance Card */}
+          <div className="mb-8">
+            {loading ? (
+              <div className="tienvios-card p-6 flex justify-center">
+                <div className="h-10 w-10 animate-spin rounded-full border-b-2 border-[var(--primary)]"></div>
+              </div>
+            ) : error ? (
+              <div className="tienvios-card p-6 flex flex-col items-center justify-center text-red-500">
+                <svg className="w-12 h-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-center">Error al cargar datos: {error}</p>
+              </div>
+            ) : (
+              <CourierPerformanceCard 
+                couriers={incidenceStats?.couriers || []}
+                isFiltered={incidenceStats?.isFiltered}
+              />
+            )}
           </div>
         </div>
       </AppLayout>

@@ -270,7 +270,7 @@ export default function AppLayout({ children, notificationCount = 0 }: AppLayout
                         : 'Usuario'}
                     </p>
                     <p className="text-xs text-[var(--gray-600)]">
-                      {loading ? '' : user?.email || 'Sin correo'}
+                      {loading ? '' : (user?.email && user.email.trim() !== '' ? user.email : 'Usuario T1')}
                     </p>
                   </div>
                 </div>

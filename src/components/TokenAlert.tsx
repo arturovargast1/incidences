@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import TokenModal from './TokenModal';
+import { resetTokenIssue } from '../lib/tokenUtils';
 
 export default function TokenAlert() {
   const [showModal, setShowModal] = useState(false);
@@ -22,10 +23,27 @@ export default function TokenAlert() {
     // Comprobar periódicamente
     const interval = setInterval(checkTokenStatus, 2000);
 
-    return () => clearInterval(interval);
+    // Clean up interval on unmount
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
+
+  // Clear the token issue flag when the component unmounts (page navigation/refresh)
+  useEffect(() => {
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.tokenHasIssues = false;
+      }
+    };
   }, []);
 
   const handleCloseModal = () => {
+    // Reset the token issue flag when the modal is closed
+    if (typeof window !== 'undefined') {
+      window.tokenHasIssues = false;
+      resetTokenIssue();
+    }
     setShowModal(false);
   };
 

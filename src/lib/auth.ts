@@ -27,11 +27,23 @@ interface AuthResponse {
 
 export async function login(email: string, password: string): Promise<AuthResponse> {
   try {
-    // Limpiamos cualquier token anterior para evitar conflictos
+    // Perform a complete cleanup to ensure no previous user data causes conflicts
+    console.log('Cleaning up previous session data before login...');
+    
+    // Clear all app tokens and user data
     localStorage.removeItem('token');
+    localStorage.removeItem(USER_STORAGE_KEY);
+    
+    // Clear Keycloak tokens
     localStorage.removeItem('keycloak_token');
     localStorage.removeItem('keycloak_refresh_token');
     localStorage.removeItem('keycloak_token_expires_at');
+    
+    // Reset global cache
+    cachedUser = null;
+    
+    // Also clear session storage to be thorough
+    sessionStorage.clear();
     
     console.log('Iniciando login con email:', email);
 
@@ -136,18 +148,36 @@ export async function login(email: string, password: string): Promise<AuthRespon
 }
 
 export function logout(): void {
-  // Limpiar token y datos de usuario
-  localStorage.removeItem('token');
-  localStorage.removeItem(USER_STORAGE_KEY);
+  console.log('Logging out and clearing all user data...');
   
-  // Limpiar tokens de Keycloak
-  localStorage.removeItem('keycloak_token');
-  localStorage.removeItem('keycloak_refresh_token');
-  localStorage.removeItem('keycloak_token_expires_at');
-  
-  cachedUser = null; // Limpiar la caché en memoria
-  
+  // Clear all user-related data from localStorage
   if (typeof window !== 'undefined') {
+    // Clear main app tokens and user data
+    localStorage.removeItem('token');
+    localStorage.removeItem(USER_STORAGE_KEY);
+    
+    // Clear Keycloak tokens
+    localStorage.removeItem('keycloak_token');
+    localStorage.removeItem('keycloak_refresh_token');
+    localStorage.removeItem('keycloak_token_expires_at');
+    
+    // Clear any other potential cache items
+    sessionStorage.clear(); // Clear session storage as well
+    
+    // Clear memory cache
+    cachedUser = null;
+    
+    // Clear any pending network requests
+    // This helps prevent race conditions with in-flight API calls
+    if (window.navigator && window.navigator.serviceWorker) {
+      window.navigator.serviceWorker.getRegistrations().then(registrations => {
+        registrations.forEach(registration => {
+          registration.unregister();
+        });
+      });
+    }
+    
+    console.log('All user data cleared, redirecting to login page');
     window.location.href = '/auth/login';
   }
 }
@@ -229,15 +259,20 @@ export function getCurrentUser(): User | null {
     // Convertir el payload a un objeto User, manejando posibles diferencias en la estructura
     const user: User = {
       user_id: payload.user_id || payload.id || payload.sub || '',
-      email: payload.email || '',
-      first_name: payload.first_name || payload.firstName || payload.nombre || '',
-      last_name: payload.last_name || payload.lastName || payload.apellidos || '',
+      email: payload.email || payload.preferred_username || payload.username || 'usuario@t1envios.com',
+      first_name: payload.first_name || payload.firstName || payload.given_name || payload.nombre || '',
+      last_name: payload.last_name || payload.lastName || payload.family_name || payload.apellidos || '',
       job_position: payload.job_position || payload.puesto || '',
-      company: payload.company || payload.empresa || '',
+      company: payload.company || payload.empresa || 'T1',
       role: (payload.role || payload.role_type || 'standard') as any,
       created_at: payload.created_at || '',
       active: true // Asumimos que está activo si el token es válido
     };
+    
+    // Asegurarse que el email no esté vacío
+    if (!user.email || user.email.trim() === '') {
+      user.email = 'usuario@t1envios.com';
+    }
     
     return user;
   } catch (error) {
@@ -359,49 +394,73 @@ let cachedUser: User | null = null;
 
 /**
  * Carga la información del usuario desde la API y la almacena en caché
- * Esta función se llama una sola vez al iniciar la aplicación
+ * Esta función se llama al iniciar la aplicación y después de cambios en la autenticación
  */
-export async function loadUserData(): Promise<User | null> {
+export async function loadUserData(forceRefresh = false): Promise<User | null> {
   try {
-    // Si ya tenemos el usuario en caché, devolverlo
-    if (cachedUser) return cachedUser;
-    
-    // Intentar obtener el usuario desde localStorage
-    const storedUser = getUserFromStorage();
-    if (storedUser) {
-      cachedUser = storedUser;
-      return storedUser;
+    // Verificar si el token actual es válido antes de usar datos en caché
+    const currentToken = getToken();
+    if (!currentToken) {
+      console.log('No hay token válido, limpiando datos de usuario');
+      cachedUser = null;
+      saveUserToStorage(null);
+      return null;
     }
+    
+    // Si tenemos usuario en caché y no estamos forzando actualización, devolverlo
+    if (cachedUser && !forceRefresh) {
+      console.log('Usando usuario en caché:', cachedUser.email);
+      return cachedUser;
+    }
+    
+    // Si no estamos forzando actualización, intentar obtener el usuario desde localStorage
+    if (!forceRefresh) {
+      const storedUser = getUserFromStorage();
+      if (storedUser) {
+        console.log('Usando usuario de localStorage:', storedUser.email);
+        cachedUser = storedUser;
+        return storedUser;
+      }
+    }
+    
+    console.log('Obteniendo información de usuario fresca desde la API o token...');
     
     // Intentar obtener el usuario desde la API
-    const apiUser = await fetchUserFromApi();
+    let user: User | null = null;
     
-    if (apiUser) {
-      // Guardar en caché y localStorage
-      cachedUser = apiUser;
-      saveUserToStorage(apiUser);
-      return apiUser;
+    try {
+      const apiUser = await fetchUserFromApi();
+      if (apiUser) {
+        console.log('Usuario obtenido desde API:', apiUser.email);
+        user = apiUser;
+      }
+    } catch (apiError) {
+      console.error('Error al obtener usuario desde API, intentando con token JWT:', apiError);
     }
     
-    // Si no se puede obtener desde la API, usar el token
-    const tokenUser = getCurrentUser();
-    if (tokenUser) {
-      cachedUser = tokenUser;
-      saveUserToStorage(tokenUser);
+    // Si no se puede obtener desde la API, usar los datos del token JWT
+    if (!user) {
+      const tokenUser = getCurrentUser();
+      if (tokenUser) {
+        console.log('Usuario obtenido desde token JWT:', tokenUser.email);
+        user = tokenUser;
+      }
     }
     
-    return tokenUser;
+    // Actualizar caché y localStorage con el usuario obtenido
+    if (user) {
+      cachedUser = user;
+      saveUserToStorage(user);
+    } else {
+      console.warn('No se pudo obtener información del usuario');
+      cachedUser = null;
+      saveUserToStorage(null);
+    }
+    
+    return user;
   } catch (error) {
     console.error('Error al cargar datos del usuario:', error);
-    
-    // Si falla todo, intentar usar la información del token
-    const tokenUser = getCurrentUser();
-    if (tokenUser) {
-      cachedUser = tokenUser;
-      saveUserToStorage(tokenUser);
-    }
-    
-    return tokenUser;
+    return null;
   }
 }
 
@@ -414,13 +473,31 @@ export function useCurrentUser() {
   const [loading, setLoading] = useState<boolean>(!user);
   
   useEffect(() => {
-    // Si ya tenemos el usuario, no necesitamos cargarlo
-    if (user) return;
-    
     const loadUser = async () => {
       try {
-        const userData = await loadUserData();
-        setUser(userData);
+        setLoading(true);
+        
+        // Force a refresh of user data when there's no email or it's using the fallback
+        const shouldForceRefresh = !user || 
+          !user.email || 
+          user.email === 'usuario@t1envios.com' ||
+          (user && user.email === 'usuario@t1envios.com');
+        
+        const userData = await loadUserData(shouldForceRefresh);
+        
+        // Double check that we actually have valid user data
+        if (userData) {
+          console.log('User data loaded successfully:', userData.email);
+          setUser(userData);
+        } else {
+          console.warn('No user data returned from loadUserData');
+          if (user && user.email !== 'usuario@t1envios.com') {
+            // Keep existing user if it seems valid
+            console.log('Keeping existing user data:', user.email);
+          } else {
+            setUser(null);
+          }
+        }
       } catch (error) {
         console.error('Error al cargar usuario:', error);
       } finally {
@@ -428,27 +505,43 @@ export function useCurrentUser() {
       }
     };
     
+    // Always attempt to load user data when the component mounts
     loadUser();
     
-    // Función para actualizar el usuario cuando cambie el token
+    // Function to handle token and user changes across tabs
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === 'token') {
-        // Si el token cambió, recargar el usuario
+        // If token changed, reload user data
+        console.log('Token changed in storage, reloading user data');
         loadUser();
       } else if (event.key === USER_STORAGE_KEY) {
-        // Si el usuario cambió en otro tab, actualizarlo
+        // If user changed in another tab, update it
         const newUser = getUserFromStorage();
+        console.log('User data changed in storage:', newUser?.email || 'No user');
         setUser(newUser);
       }
     };
     
-    // Escuchar cambios en localStorage
+    // Listen for storage changes
     window.addEventListener('storage', handleStorageChange);
+    
+    // Periodically check token validity
+    const tokenCheckInterval = setInterval(() => {
+      const token = getToken();
+      if (!token && user) {
+        // If token is gone but we have user data, clear it
+        console.log('Token no longer valid, clearing user data');
+        setUser(null);
+        saveUserToStorage(null);
+        cachedUser = null;
+      }
+    }, 30000); // Check every 30 seconds
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
+      clearInterval(tokenCheckInterval);
     };
-  }, [user]);
+  }, []); // Only run on mount, not when user changes
   
   return { user, loading };
 }
