@@ -129,7 +129,13 @@ async function fetchWithAuth(
 /**
  * Obtener el tablero de incidencias con paginación
  */
-export async function fetchIncidents(carrierId: number, page: number = 1, pageSize: number = 10) {
+export async function fetchIncidents(
+  carrierId: number, 
+  page: number = 1, 
+  pageSize: number = 10,
+  startDate?: string,
+  endDate?: string
+) {
   // Asegurarse de que los parámetros de paginación sean números válidos
   const validPage = Math.max(1, page);
   const validPageSize = Math.max(1, pageSize);
@@ -140,6 +146,15 @@ export async function fetchIncidents(carrierId: number, page: number = 1, pageSi
   // Añadir el parámetro de mensajería solo si no es 0 (Todas las paqueterías)
   if (carrierId !== 0) {
     url += `&mensajeria=${carrierId}`;
+  }
+  
+  // Añadir parámetros de fechas si están presentes
+  if (startDate) {
+    url += `&start_date=${startDate}`;
+  }
+  
+  if (endDate) {
+    url += `&end_date=${endDate}`;
   }
   
   console.log(`Fetching incidents with pagination - URL: ${url}`);
@@ -278,16 +293,37 @@ export async function fetchIncidentDetails(incidentId: string) {
  * Obtener estadísticas de incidencias para el dashboard
  * @param carrierId ID de la paquetería (opcional)
  * @param useKeycloakToken Si es true, añade el token de Keycloak en la cabecera 'token'
+ * @param startDate Fecha de inicio para filtrar (formato YYYY-MM-DD)
+ * @param endDate Fecha de fin para filtrar (formato YYYY-MM-DD)
  */
-export async function fetchIncidenceStats(carrierId?: number, useKeycloakToken: boolean = false) {
+export async function fetchIncidenceStats(
+  carrierId?: number, 
+  useKeycloakToken: boolean = false,
+  startDate?: string,
+  endDate?: string
+) {
   let url = '/incidence/cardsadmin';
+  let hasParams = false;
   
   // Añadir el parámetro de mensajería solo si se proporciona y no es 0 (Todas las paqueterías)
   if (carrierId && carrierId !== 0) {
     url += `?mensajeria=${carrierId}`;
+    hasParams = true;
   }
   
-  console.log(`Fetching incidence stats with Keycloak token: ${useKeycloakToken}`);
+  // Añadir parámetros de fechas si están presentes
+  if (startDate) {
+    url += hasParams ? '&' : '?';
+    url += `start_date=${startDate}`;
+    hasParams = true;
+  }
+  
+  if (endDate) {
+    url += hasParams ? '&' : '?';
+    url += `end_date=${endDate}`;
+  }
+  
+  console.log(`Fetching incidence stats with Keycloak token: ${useKeycloakToken}, URL: ${url}`);
   
   return fetchWithAuth(url, {}, 'auto', useKeycloakToken);
 }
@@ -628,8 +664,14 @@ export const USER_ROLE_NAMES: Record<string, string> = {
 /**
  * Obtener la URL para descargar incidencias en Excel
  */
-export async function downloadIncidentsExcel(carrierId: number = 1, page: number = 1, pageSize: number = 20) {
-  console.log(`Requesting Excel download for carrier: ${carrierId}, page: ${page}, pageSize: ${pageSize}`);
+export async function downloadIncidentsExcel(
+  carrierId: number = 1, 
+  page: number = 1, 
+  pageSize: number = 20,
+  startDate?: string,
+  endDate?: string
+) {
+  console.log(`Requesting Excel download for carrier: ${carrierId}, page: ${page}, pageSize: ${pageSize}, dates: ${startDate} - ${endDate}`);
   
   // Construir la URL base
   let url = `/incidence/download?page=${page}&page_size=${pageSize}`;
@@ -637,6 +679,15 @@ export async function downloadIncidentsExcel(carrierId: number = 1, page: number
   // Añadir el parámetro de mensajería solo si no es 0 (Todas las paqueterías)
   if (carrierId !== 0) {
     url += `&mensajeria=${carrierId}`;
+  }
+  
+  // Añadir parámetros de fechas si están presentes
+  if (startDate) {
+    url += `&start_date=${startDate}`;
+  }
+  
+  if (endDate) {
+    url += `&end_date=${endDate}`;
   }
   
   return fetchWithAuth(url);

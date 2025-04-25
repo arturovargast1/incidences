@@ -21,7 +21,11 @@ export interface CourierData {
   percentage_of_total_incidents?: number;
 }
 
-export function useIncidenceStats(selectedCarrierId: number = 0) {
+export function useIncidenceStats(
+  selectedCarrierId: number = 0,
+  startDate?: string,
+  endDate?: string
+) {
   const [apiResponse, setApiResponse] = useState<IncidenceStatsResponse | null>(null);
   const [processedStats, setProcessedStats] = useState<ProcessedStats | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -34,13 +38,13 @@ export function useIncidenceStats(selectedCarrierId: number = 0) {
       setLoading(true);
       setError(null);
       
-      console.log(`Fetching incidence stats for carrier ID: ${selectedCarrierId}`);
+      console.log(`Fetching incidence stats for carrier ID: ${selectedCarrierId}, dates: ${startDate} - ${endDate}`);
       
       let response;
       try {
         // Try with Keycloak token in the 'token' header (new approach)
         const useKeycloakToken = true;
-        response = await fetchIncidenceStats(selectedCarrierId, useKeycloakToken);
+        response = await fetchIncidenceStats(selectedCarrierId, useKeycloakToken, startDate, endDate);
         console.log('Incidence stats response with Keycloak token:', JSON.stringify(response, null, 2));
       } catch (error) {
         console.error('Error fetching from API:', error);
@@ -167,7 +171,7 @@ export function useIncidenceStats(selectedCarrierId: number = 0) {
     } finally {
       setLoading(false);
     }
-  }, [selectedCarrierId]); // Remove refreshTrigger from dependencies as it's not used in the function body
+  }, [selectedCarrierId, startDate, endDate]); // Include date params in dependencies
 
   // Fetch stats when dependencies change
   useEffect(() => {

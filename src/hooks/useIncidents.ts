@@ -10,7 +10,11 @@ interface IncidentsResponse {
   detail: Incident[];
 }
 
-export function useIncidents(carrierId: number) {
+export function useIncidents(
+  carrierId: number,
+  startDate?: string,
+  endDate?: string
+) {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -26,10 +30,10 @@ export function useIncidents(carrierId: number) {
       setLoading(true);
       setError(null);
       
-      console.log(`Fetching incidents for carrier: ${carrierId}, page: ${currentPage}, size: ${pageSize}`);
+      console.log(`Fetching incidents for carrier: ${carrierId}, page: ${currentPage}, size: ${pageSize}, dates: ${startDate} - ${endDate}`);
       
       try {
-        const data: IncidentsResponse = await fetchIncidents(carrierId, currentPage, pageSize);
+        const data: IncidentsResponse = await fetchIncidents(carrierId, currentPage, pageSize, startDate, endDate);
         
         console.log('Response data:', data);
         
@@ -132,7 +136,7 @@ export function useIncidents(carrierId: number) {
     } finally {
       setLoading(false);
     }
-  }, [carrierId, currentPage, pageSize]); // Remove refreshTrigger from dependencies as it's not used in the function body
+  }, [carrierId, currentPage, pageSize, startDate, endDate]); // Include date params in dependencies
 
   // Función para actualizar una incidencia
   const handleUpdateIncident = async (updateData: IncidentUpdateRequest | string) => {

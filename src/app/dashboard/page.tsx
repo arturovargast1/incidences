@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import AuthGuard from '../../components/AuthGuard';
 import AppLayout from '../../components/AppLayout';
 import StatusCard from '../../components/dashboard/StatusCard';
@@ -10,7 +10,28 @@ import { CARRIER_NAMES, INCIDENT_TYPE_NAMES, INCIDENT_STATUS_NAMES } from '../..
 import Link from 'next/link';
 
 export default function Dashboard() {
+  // Helper function to format date to YYYY-MM-DD
+  const formatDateForAPI = (date: Date): string => {
+    return date.toISOString().split('T')[0];
+  };
+
+  // Calculate default date range (last 7 days)
+  const calculateDefaultDateRange = (): { startDate: string, endDate: string } => {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - 7);
+    
+    return {
+      startDate: formatDateForAPI(startDate),
+      endDate: formatDateForAPI(endDate)
+    };
+  };
+
+  const defaultDateRange = useMemo(() => calculateDefaultDateRange(), []);
+  
   const [selectedCarrier, setSelectedCarrier] = useState<number>(0);
+  const [startDate, setStartDate] = useState<string>(defaultDateRange.startDate);
+  const [endDate, setEndDate] = useState<string>(defaultDateRange.endDate);
   const [stats, setStats] = useState({
     incidentRate: '0%',
     slaCompliance: '100%',
@@ -29,14 +50,14 @@ export default function Dashboard() {
     error: incidentsError,
     totalRecords,
     refreshData: refreshIncidents,
-  } = useIncidents(selectedCarrier);
+  } = useIncidents(selectedCarrier, startDate, endDate);
   
   const {
     filteredData: incidenceStats,
     loading: statsLoading,
     error: statsError,
     refreshData: refreshStats
-  } = useIncidenceStats(selectedCarrier);
+  } = useIncidenceStats(selectedCarrier, startDate, endDate);
   
   // Function to refresh all data
   const refreshData = () => {
@@ -128,9 +149,10 @@ export default function Dashboard() {
             <h1 className="text-2xl font-bold text-[var(--gray-900)] mb-2">Dashboard de Incidencias</h1>
           </div>
           
-          {/* Carrier selector and refresh button */}
+          {/* Carrier selector, date range, and refresh button */}
           <div className="tienvios-card p-6 mb-8 border border-[var(--gray-200)]">
-            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-end gap-4 flex-wrap">
+              {/* Carrier selector */}
               <div className="w-full md:w-72">
                 <label htmlFor="carrier" className="block text-sm font-semibold text-[var(--gray-700)] mb-2">
                   Selecciona una paquetería
@@ -152,12 +174,42 @@ export default function Dashboard() {
                 </div>
               </div>
               
-              <button
-                onClick={refreshData}
-                disabled={loading}
-                className="tienvios-button flex items-center justify-center"
-              >
-                {loading ? (
+              {/* Date range picker */}
+              <div className="w-full md:w-auto flex-1 md:flex md:space-x-4">
+                <div className="mb-4 md:mb-0 md:flex-1">
+                  <label htmlFor="start_date" className="block text-sm font-semibold text-[var(--gray-700)] mb-2">
+                    Fecha Inicio
+                  </label>
+                  <input
+                    type="date"
+                    id="start_date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="filter-control w-full"
+                  />
+                </div>
+                <div className="md:flex-1">
+                  <label htmlFor="end_date" className="block text-sm font-semibold text-[var(--gray-700)] mb-2">
+                    Fecha Fin
+                  </label>
+                  <input
+                    type="date"
+                    id="end_date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="filter-control w-full"
+                  />
+                </div>
+              </div>
+              
+              {/* Refresh button */}
+              <div className="mt-4 md:mt-0">
+                <button
+                  onClick={refreshData}
+                  disabled={loading}
+                  className="tienvios-button flex items-center justify-center w-full"
+                >
+                  {loading ? (
                   <span className="flex items-center">
                     <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -172,8 +224,9 @@ export default function Dashboard() {
                     </svg>
                     <span>Actualizar datos</span>
                   </>
-                )}
-              </button>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
           

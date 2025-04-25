@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import AuthGuard from '../../components/AuthGuard';
@@ -29,7 +29,28 @@ export default function IncidentsPage() {
   const router = useRouter();
   const { user } = useCurrentUser();
   const isT1CompanyUser = user?.company === 'T1';
+  // Helper function to format date to YYYY-MM-DD
+  const formatDateForAPI = (date: Date): string => {
+    return date.toISOString().split('T')[0];
+  };
+
+  // Calculate default date range (last 7 days)
+  const calculateDefaultDateRange = (): { startDate: string, endDate: string } => {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - 7);
+    
+    return {
+      startDate: formatDateForAPI(startDate),
+      endDate: formatDateForAPI(endDate)
+    };
+  };
+
+  const defaultDateRange = useMemo(() => calculateDefaultDateRange(), []);
+  
   const [selectedCarrier, setSelectedCarrier] = useState<number>(0);
+  const [startDate, setStartDate] = useState<string>(defaultDateRange.startDate);
+  const [endDate, setEndDate] = useState<string>(defaultDateRange.endDate);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -70,7 +91,7 @@ export default function IncidentsPage() {
     changePage,
     changePageSize,
     refreshData,
-  } = useIncidents(selectedCarrier);
+  } = useIncidents(selectedCarrier, startDate, endDate);
   
   // Cargar estadísticas de incidencias
   useEffect(() => {
@@ -308,7 +329,7 @@ export default function IncidentsPage() {
   const handleExportToExcel = async () => {
     try {
       setExportLoading(true);
-      const response = await downloadIncidentsExcel(selectedCarrier, currentPage, pageSize);
+      const response = await downloadIncidentsExcel(selectedCarrier, currentPage, pageSize, startDate, endDate);
       
       if (response.success && response.data?.file_url) {
         // Open the file URL in a new tab
@@ -381,7 +402,7 @@ export default function IncidentsPage() {
           {/* Controls and filters */}
           <div className="tienvios-card p-6 mb-8">
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
-              <div className="flex flex-col md:flex-row gap-4 flex-grow">
+              <div className="flex flex-col md:flex-row gap-4 flex-grow flex-wrap">
                 <div className="w-full md:w-auto">
                   <label htmlFor="carrier" className="block text-sm font-semibold text-[var(--gray-700)] mb-1">
                     Paquetería
@@ -397,6 +418,34 @@ export default function IncidentsPage() {
                       <option key={id} value={id}>{name}</option>
                     ))}
                   </select>
+                </div>
+                
+                {/* Date range picker */}
+                <div className="w-full md:w-auto flex flex-col md:flex-row md:space-x-4">
+                  <div className="mb-4 md:mb-0">
+                    <label htmlFor="start_date" className="block text-sm font-semibold text-[var(--gray-700)] mb-1">
+                      Fecha Inicio
+                    </label>
+                    <input
+                      type="date"
+                      id="start_date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="filter-control w-full md:w-auto"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="end_date" className="block text-sm font-semibold text-[var(--gray-700)] mb-1">
+                      Fecha Fin
+                    </label>
+                    <input
+                      type="date"
+                      id="end_date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="filter-control w-full md:w-auto"
+                    />
+                  </div>
                 </div>
                 
                 <button
