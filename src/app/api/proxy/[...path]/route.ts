@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // La URL base de la API a la que queremos hacer proxy
-const API_BASE_URL = 'https://apiv2.dev.t1envios.com';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://apiv2.dev.t1envios.com';
 
 // Variable opcional para depuración
 const DEBUGGING = true;

@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import { User } from '../types/users';
 
-// URL del servidor proxy local
+// URL del servidor proxy local (for client side) or the actual API URL (for server side)
 export const API_URL = '/api/proxy';
+
+// Direct API URL for server side components that may need it
+export const DIRECT_API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://apiv2.dev.t1envios.com';
 
 // Interfaz para el payload del JWT
 interface JwtPayload {

@@ -26,19 +26,44 @@ npm install
 
 ## Configuration
 
-### API Configuration
+### Environment Variables
 
-The application uses a proxy to communicate with the backend API. Configure the API endpoint in:
-`src/app/api/proxy/[...path]/route.ts`
+The application uses environment variables for configuration. These are set up in the following files:
 
-```typescript
-// Update this URL to point to your backend API
-// Development environment
-const API_BASE_URL = 'https://apiv2.dev.t1envios.com';
+- `.env.development` - Development environment settings
+- `.env.production` - Production environment settings
+- `.env.local` - Local overrides (not committed to git)
 
-// Production environment
-// const API_BASE_URL = 'https://apiv2.t1envios.com';
+To configure your local environment:
+
+1. Copy the template file to create your local configuration:
+   ```bash
+   cp .env.local.template .env.local
+   ```
+
+2. Edit `.env.local` to set your own configuration values.
+
+Available environment variables:
+
 ```
+# Keycloak Configuration
+NEXT_PUBLIC_KEYCLOAK_URL=https://carriers-id.t1.com
+NEXT_PUBLIC_KEYCLOAK_REALM=incidencias
+NEXT_PUBLIC_KEYCLOAK_ADMIN_REALM=master
+NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=back-service-incidents
+NEXT_PUBLIC_KEYCLOAK_CLIENT_SECRET=your-client-secret
+
+# API URL
+NEXT_PUBLIC_API_URL=https://apiv2.t1envios.com
+```
+
+For development environments, the default values are:
+- Keycloak URL: https://incidencias-kc.dev.t1envios.com
+- API URL: https://apiv2.dev.t1envios.com
+
+For production environments, the default values are:
+- Keycloak URL: https://carriers-id.t1.com
+- API URL: https://apiv2.t1envios.com
 
 ## Development
 

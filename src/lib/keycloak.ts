@@ -3,11 +3,11 @@
  */
 
 // Keycloak server URL and realm configuration
-const KEYCLOAK_URL = 'https://incidencias-kc.dev.t1envios.com';
-const KEYCLOAK_REALM = 'incidencias';
-const KEYCLOAK_ADMIN_REALM = 'master';
-const KEYCLOAK_CLIENT_ID = 'back-service-incidents';
-const KEYCLOAK_CLIENT_SECRET = 'MUBVY1TDs12thaZvyWSO4pqBE5A2K5rb';
+const KEYCLOAK_URL = process.env.NEXT_PUBLIC_KEYCLOAK_URL || 'https://incidencias-kc.dev.t1envios.com';
+const KEYCLOAK_REALM = process.env.NEXT_PUBLIC_KEYCLOAK_REALM || 'incidencias';
+const KEYCLOAK_ADMIN_REALM = process.env.NEXT_PUBLIC_KEYCLOAK_ADMIN_REALM || 'master';
+const KEYCLOAK_CLIENT_ID = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || 'back-service-incidents';
+const KEYCLOAK_CLIENT_SECRET = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_SECRET || 'MUBVY1TDs12thaZvyWSO4pqBE5A2K5rb';
 
 // Types for Keycloak responses
 interface KeycloakTokenResponse {
