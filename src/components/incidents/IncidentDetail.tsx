@@ -33,18 +33,34 @@ const FIELD_TRANSLATIONS: Record<string, string> = {
   'days_without_movement': 'Días sin movimiento',
   'last_status': 'Último estado',
   'last_location': 'Última ubicación',
+  'problemDescription': 'Descripción del problema',
+  'packageDescription': 'Descripción del embalaje',
+  'exactProductDescription': 'Descripción exacta del producto',
+  'pieces': 'Número de piezas',
   
   // Paquete dañado
   'damage_type': 'Tipo de daño',
   'damage_description': 'Descripción del daño',
   'damage_photos': 'Fotos del daño',
   'claim_amount': 'Monto de reclamación',
+  'content': 'Contenido',
+  'damagedPieces': 'Número de piezas dañadas',
+  'goodPieces': 'Número de piezas en buen estado',
+  'matchDamage': 'El daño presentado en el empaque exterior, ¿coincide con el daño del contenido?',
+  'photos': 'Evidencia',
   
   // Paquete perdido
   'last_seen_date': 'Última vez visto',
   'last_seen_location': 'Última ubicación conocida',
   'package_value': 'Valor del paquete',
   'insurance_coverage': 'Cobertura de seguro',
+  'cost': 'Costo',
+  'currency': 'Moneda',
+  'invoice': 'Adjuntar factura',
+  'shippingGuide': 'Adjuntar guía',
+  
+  // Paquete abierto o manipulado
+  'declaredContent': 'Contenido declarado del paquete',
   
   // Recolección fallida
   'attempt_date': 'Fecha de intento',
@@ -56,6 +72,18 @@ const FIELD_TRANSLATIONS: Record<string, string> = {
   'original_delivery_date': 'Fecha original de entrega',
   'estimated_delivery_date': 'Fecha estimada de entrega',
   'delay_reason': 'Motivo del retraso',
+  'addressForm': 'Formulario de dirección',
+  
+  // Entrega en dirección incorrecta
+  'addressResume': 'Resumen de dirección',
+  
+  // Retornar a origen
+  'addressSelector': 'Selector de dirección',
+  
+  // Enviar a paquetería
+  'warehouseSelector': 'Selector de sucursal',
+  
+  // Cancelar guía
   
   // Campos generales
   'notes': 'Notas',
@@ -65,7 +93,99 @@ const FIELD_TRANSLATIONS: Record<string, string> = {
   'location': 'Ubicación',
   'contact': 'Contacto',
   'phone': 'Teléfono',
-  'email': 'Correo electrónico'
+  'email': 'Correo electrónico',
+  
+  // Información de paquete (volumetría, valor, servicio)
+  'volumetry': 'Volumetría',
+  'weight': 'Peso',
+  'length': 'Largo',
+  'width': 'Ancho',
+  'height': 'Alto',
+  'value': 'Valor',
+  'service': 'Servicio',
+  'service_type': 'Tipo de servicio',
+  
+  // Traducciones específicas por tipo de incidencia
+  // Paquete dañado
+  'package_damaged.packageDescription': 'Descripción del embalaje',
+  'package_damaged.content': 'Contenido',
+  'package_damaged.damagedPieces': 'Número de piezas dañadas',
+  'package_damaged.goodPieces': 'Número de piezas en buen estado',
+  'package_damaged.matchDamage': 'El daño presentado en el empaque exterior, ¿coincide con el daño del contenido?',
+  'package_damaged.problemDescription': 'Descripción del problema',
+  'package_damaged.photos': 'Evidencia',
+  
+  // Paquete abierto o manipulado
+  'package_opened_or_tampered.packageDescription': 'Descripción del embalaje',
+  'package_opened_or_tampered.exactProductDescription': 'Descripción exacta del producto',
+  'package_opened_or_tampered.declaredContent': 'Contenido declarado del paquete',
+  'package_opened_or_tampered.problemDescription': 'Descripción del problema',
+  'package_opened_or_tampered.photos': 'Evidencia',
+  
+  // Retraso en entrega
+  'delivery_delay.packageDescription': 'Descripción del embalaje',
+  'delivery_delay.exactProductDescription': 'Descripción exacta del producto',
+  'delivery_delay.cost': 'Costo',
+  'delivery_delay.problemDescription': 'Descripción del problema',
+  'delivery_delay.addressForm': 'Formulario de dirección',
+  
+  // Entrega en dirección incorrecta
+  'wrong_address_delivery.packageDescription': 'Descripción del embalaje',
+  'wrong_address_delivery.exactProductDescription': 'Descripción exacta del producto',
+  'wrong_address_delivery.cost': 'Costo',
+  'wrong_address_delivery.currency': 'Moneda',
+  'wrong_address_delivery.problemDescription': 'Descripción del problema',
+  'wrong_address_delivery.addressResume': 'Resumen de dirección',
+  'wrong_address_delivery.photos': 'Adjuntar identificación oficial (INE)',
+  
+  // Retornar a origen
+  'return_to_origin.problemDescription': 'Descripción del problema',
+  'return_to_origin.addressSelector': 'Selector de dirección',
+  
+  // Pago de compensación
+  'compensation_payment.problemDescription': 'Descripción del problema',
+  'compensation_payment.invoice': 'Adjuntar factura',
+  'compensation_payment.shippingGuide': 'Adjuntar guía',
+  
+  // Recolecciones fallidas
+  'failed_pickups.problemDescription': 'Descripción del problema',
+  
+  // Aclaración sobrepeso
+  'overweight.problemDescription': 'Descripción del problema',
+  
+  // Enviar a paquetería
+  'send_to_courier.problemDescription': 'Descripción del problema',
+  'send_to_courier.warehouseSelector': 'Selector de sucursal',
+  
+  // Paquete sin movimiento
+  'package_without_movement.problemDescription': 'Descripción del problema',
+  'package_without_movement.packageDescription': 'Descripción del embalaje',
+  'package_without_movement.exactProductDescription': 'Descripción exacta del producto',
+  'package_without_movement.pieces': 'Número de piezas',
+  
+  // Paquete perdido
+  'package_lost.problemDescription': 'Descripción del problema',
+  'package_lost.packageDescription': 'Descripción del embalaje',
+  'package_lost.exactProductDescription': 'Descripción exacta del producto',
+  'package_lost.cost': 'Costo',
+  'package_lost.currency': 'Moneda',
+  'package_lost.invoice': 'Adjuntar factura',
+  'package_lost.shippingGuide': 'Adjuntar guía',
+  
+  // Cancelar guía
+  'cancel_guide.reason': 'Motivo de cancelación',
+  'cancel_guide.problemDescription': 'Descripción del problema',
+  
+  // Campos de dirección (utilizados en address_change)
+  'address.street': 'Calle',
+  'address.extNumber': 'Número exterior',
+  'address.intNumber': 'Número interior',
+  'address.zip': 'Código postal',
+  'address.neighborhood': 'Colonia',
+  'address.state': 'Estado',
+  'address.city': 'Ciudad',
+  'address.references': 'Referencia',
+  'address.reason': 'Motivo'
 };
 
 interface IncidentDetailProps {
@@ -135,8 +255,14 @@ export default function IncidentDetail({ incident, onStatusChange }: IncidentDet
       // Ignorar propiedades que no son directamente datos relevantes
       if (key === 'type') return;
       
+      // Intentar buscar una traducción específica según el tipo de incidencia
+      // Formato: tipo_incidencia.campo (ej: package_damaged.packageDescription)
+      const incidentType = incident.type;
+      const specificTranslationKey = `${incidentType}.${key}`;
+      
       // Obtener el nombre del campo en español o usar el nombre original
-      const fieldLabel = FIELD_TRANSLATIONS[key] || key;
+      // Primero buscar traducción específica, luego general, luego usar el nombre original
+      const fieldLabel = FIELD_TRANSLATIONS[specificTranslationKey] || FIELD_TRANSLATIONS[key] || key;
       
       // Verificar si el campo es un array de fotos
       if (isPhotoArray(value)) {
@@ -168,6 +294,50 @@ export default function IncidentDetail({ incident, onStatusChange }: IncidentDet
           normalFields.push(
             <p key={key} className="text-sm font-medium mb-1">
               <span className="font-semibold">{fieldLabel}:</span> {fieldValue}
+            </p>
+          );
+        }
+      } else if (key === 'volumetry' && typeof value === 'object') {
+        // Manejar volumetry como un caso especial para mostrarlo de forma más legible
+        try {
+          // Si volumetry es una cadena JSON, intentar analizarla
+          const volumeData = typeof value === 'string' ? JSON.parse(value) : value;
+          
+          // Crear campos individuales para cada propiedad de volumetría
+          normalFields.push(
+            <div key={key} className="mb-2">
+              <p className="text-sm font-medium mb-1">
+                <span className="font-semibold">{fieldLabel}:</span>
+              </p>
+              <div className="pl-4">
+                {volumeData.weight && (
+                  <p className="text-sm font-medium mb-1">
+                    <span className="font-semibold">{FIELD_TRANSLATIONS['weight']}:</span> {volumeData.weight}
+                  </p>
+                )}
+                {volumeData.length && (
+                  <p className="text-sm font-medium mb-1">
+                    <span className="font-semibold">{FIELD_TRANSLATIONS['length']}:</span> {volumeData.length}
+                  </p>
+                )}
+                {volumeData.width && (
+                  <p className="text-sm font-medium mb-1">
+                    <span className="font-semibold">{FIELD_TRANSLATIONS['width']}:</span> {volumeData.width}
+                  </p>
+                )}
+                {volumeData.height && (
+                  <p className="text-sm font-medium mb-1">
+                    <span className="font-semibold">{FIELD_TRANSLATIONS['height']}:</span> {volumeData.height}
+                  </p>
+                )}
+              </div>
+            </div>
+          );
+        } catch (error) {
+          // Si hay un error al intentar analizar, mostrar como cadena
+          normalFields.push(
+            <p key={key} className="text-sm font-medium mb-1">
+              <span className="font-semibold">{fieldLabel}:</span> {String(value)}
             </p>
           );
         }

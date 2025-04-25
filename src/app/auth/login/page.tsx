@@ -56,9 +56,6 @@ export default function Login() {
             />
           </div>
           <h1 className="text-2xl font-bold text-gray-800">Incidencias T1 Envíos</h1>
-          <p className="mt-2 text-gray-600">
-            Plataforma de gestión de incidencias para equipos de operación
-          </p>
         </div>
         
         <form className="space-y-6" onSubmit={handleSubmit}>
@@ -96,13 +93,10 @@ export default function Login() {
             </div>
             
             <div>
-              <div className="flex items-center justify-between mb-1.5">
+              <div className="mb-1.5">
                 <label htmlFor="password" className="block text-sm font-semibold text-gray-800">
                   Contraseña
                 </label>
-                <a href="#" className="text-sm font-medium text-[var(--primary)] hover:text-[var(--primary-dark)] transition-colors">
-                  ¿Olvidaste tu contraseña?
-                </a>
               </div>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

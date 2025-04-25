@@ -486,11 +486,8 @@ export default function IncidentsPage() {
           {/* Incident list */}
           <div className="tienvios-card overflow-hidden">
             <div className="p-5 border-b border-[var(--gray-200)]">
-              <h2 className="text-lg font-bold text-[var(--gray-900)]">Incidencias</h2>
-              <p className="text-sm text-[var(--gray-600)]">{filteredIncidents.length} incidencias encontradas de {totalRecords} en total</p>
-              
               {/* Status and SLA summary */}
-              <div className="mt-4 flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2">
                 <div 
                   className="status-tag status-requires-action cursor-pointer hover:opacity-90"
                   onClick={() => setStatusFilter(statusFilter === 'requires_action' ? 'all' : 'requires_action')}

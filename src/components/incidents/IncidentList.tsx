@@ -52,8 +52,6 @@ export default function IncidentList({
   return (
     <div className="w-full">
       <div className="p-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Incidencias</h2>
-        
         <div className="flex space-x-2 overflow-x-auto pb-2">
           <button 
             className={`px-3 py-2 text-xs font-medium rounded-lg whitespace-nowrap transition-all duration-200 ${
