@@ -12,17 +12,11 @@ import {
   INCIDENT_TYPE_NAMES, 
   INCIDENT_STATUS_NAMES, 
   formatDate,
-  fetchIncidenceStats,
   downloadIncidentsExcel,
-  IncidenceStatsResponse,
-  CourierStats,
   calculateRemainingDays
 } from '../../lib/api';
 import CsvUploadModal from '../../components/incidents/CsvUploadModal';
 import ExportErrorModal from '../../components/ExportErrorModal';
-import IncidenceRateCard from '../../components/dashboard/IncidenceRateCard';
-import CourierPerformanceCard from '../../components/dashboard/CourierPerformanceCard';
-import SingleCourierCard from '../../components/dashboard/SingleCourierCard';
 import { Incident } from '../../types/incidents';
 
 export default function IncidentsPage() {
@@ -59,8 +53,6 @@ export default function IncidentsPage() {
   const [sortedIncidents, setSortedIncidents] = useState<Incident[]>([]);
   const [statusCounts, setStatusCounts] = useState<Record<string, number>>({});
   const [slaCounts, setSlaCounts] = useState<{inTime: number, expired: number}>({inTime: 0, expired: 0});
-  const [incidenceStats, setIncidenceStats] = useState<IncidenceStatsResponse | null>(null);
-  const [loadingStats, setLoadingStats] = useState<boolean>(true);
   const [exportLoading, setExportLoading] = useState<boolean>(false);
   const [exportError, setExportError] = useState<string | null>(null);
   const [isExportErrorModalOpen, setIsExportErrorModalOpen] = useState<boolean>(false);
@@ -93,23 +85,6 @@ export default function IncidentsPage() {
     refreshData,
   } = useIncidents(selectedCarrier, startDate, endDate);
   
-  // Cargar estadísticas de incidencias
-  useEffect(() => {
-    const loadIncidenceStats = async () => {
-      try {
-        setLoadingStats(true);
-        const data = await fetchIncidenceStats();
-        setIncidenceStats(data as IncidenceStatsResponse);
-      } catch (error) {
-        console.error('Error al cargar estadísticas de incidencias:', error);
-      } finally {
-        setLoadingStats(false);
-      }
-    };
-    
-    loadIncidenceStats();
-  }, []);
-
   // Apply filters to incidents and calculate counts
   useEffect(() => {
     if (!incidents) return;
@@ -219,65 +194,6 @@ export default function IncidentsPage() {
   const incidentTypes = incidents 
     ? [...new Set(incidents.map(inc => inc.type))]
     : [];
-  
-  // Función para renderizar las tarjetas de paquetería
-  const renderCarrierCards = () => {
-    if (!incidenceStats) return null;
-    
-    return incidenceStats.detail.couriers
-      .filter(courier => (courier.total_de_registros || courier.total_records || 0) > 0)
-      .sort((a, b) => (b.total_de_registros || b.total_records || 0) - (a.total_de_registros || a.total_records || 0))
-      .slice(0, 4)
-      .map((courier, index) => {
-        // Determinar color del círculo basado en el nombre de la paquetería
-        let bgColor = "bg-gray-100";
-        let textColor = "text-gray-800";
-        let shortName = "N/A";
-        
-        if (courier.nombre_mensajeria === "DHL") {
-          bgColor = "bg-red-100";
-          textColor = "text-red-700";
-          shortName = "DHL";
-        } else if (courier.nombre_mensajeria === "FEDEX") {
-          bgColor = "bg-purple-100";
-          textColor = "text-purple-700";
-          shortName = "FDX";
-        } else if (courier.nombre_mensajeria === "ESTAFETA") {
-          bgColor = "bg-blue-100";
-          textColor = "text-blue-700";
-          shortName = "EST";
-        } else if (courier.nombre_mensajeria === "UPS") {
-          bgColor = "bg-yellow-100";
-          textColor = "text-yellow-800";
-          shortName = "UPS";
-        } else if (courier.nombre_mensajeria === "99MIN") {
-          bgColor = "bg-green-100";
-          textColor = "text-green-700";
-          shortName = "99M";
-        } else if (courier.nombre_mensajeria) {
-          shortName = courier.nombre_mensajeria.substring(0, 3);
-        }
-        
-        return (
-          <div key={index} className="flex items-center p-2 rounded-lg hover:bg-[var(--gray-50)]">
-            <div className="mr-3 flex-shrink-0">
-              <div className={`w-10 h-10 rounded-full ${bgColor} ${textColor} flex items-center justify-center font-bold`}>
-                {shortName}
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center">
-                <span className="text-lg font-bold text-[var(--gray-900)]">{((courier.percentaje || 0) * 100).toFixed(1)}%</span>
-              </div>
-              <div className="text-xs font-medium text-[var(--gray-600)]">
-                {courier.total_de_incidencias || courier.total_incidents || 0}/
-                {courier.total_de_registros || courier.total_records || 0} envíos
-              </div>
-            </div>
-          </div>
-        );
-      });
-  };
   
   // Get situation based on incident type
   const getSituacion = (type: string) => {

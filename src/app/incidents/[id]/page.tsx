@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import AuthGuard from '../../../components/AuthGuard';
 import AppLayout from '../../../components/AppLayout';
@@ -8,22 +8,28 @@ import IncidentDetail from '../../../components/incidents/IncidentDetail';
 import { fetchIncidentDetails, updateIncident } from '../../../lib/api';
 import { logout } from '../../../lib/auth';
 
-// Use any for params to avoid type errors with Next.js 15.2.2
+// Define the type for route params
+interface IncidentParams {
+  id: string;
+}
+
+// Use typed params for Next.js
 export default function IncidentDetailPage({ params }: { params: any }) {
+  const unwrappedParams = React.use(params) as IncidentParams;
   const router = useRouter();
   const searchParams = useSearchParams();
   const [incident, setIncident] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Forzar recarga de incidencia desde el servidor
-  const reloadIncident = async () => {
+  // Forzar recarga de incidencia desde el servidor - memoized with useCallback
+  const reloadIncident = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
-      console.log('Cargando detalles de incidencia:', params.id);
-      const detailData = await fetchIncidentDetails(params.id);
+      console.log('Cargando detalles de incidencia:', unwrappedParams.id);
+      const detailData = await fetchIncidentDetails(unwrappedParams.id);
       console.log('Datos obtenidos de la API:', detailData);
       
       if (detailData && detailData.detail) {
@@ -113,11 +119,11 @@ export default function IncidentDetailPage({ params }: { params: any }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [unwrappedParams.id]); // Only depend on the ID
   
   // Cargar datos al iniciar, primero desde los parámetros de búsqueda, luego desde la API si es necesario
   useEffect(() => {
-    if (params.id) {
+    if (unwrappedParams.id) {
       // Intentar obtener datos desde los parámetros de búsqueda
       const encodedData = searchParams?.get('data');
       
@@ -144,7 +150,7 @@ export default function IncidentDetailPage({ params }: { params: any }) {
         reloadIncident();
       }
     }
-  }, [params.id, searchParams, reloadIncident]);
+  }, [unwrappedParams.id, searchParams]); // Remove reloadIncident from dependencies
   
   const handleStatusChange = async (newStatus: string) => {
     if (!incident) return;
@@ -173,7 +179,7 @@ export default function IncidentDetailPage({ params }: { params: any }) {
         
         // Preparar la solicitud según el formato esperado por la API
         const updateData: any = {
-          incidentId: params.id, // Usar el ID de la URL que es el formato correcto
+          incidentId: unwrappedParams.id, // Usar el ID de la URL que es el formato correcto
           status: newStatus, // Usar status como espera la API
           actionType: actionType,
           notes: `La mensajeria procesa la incidencia`
