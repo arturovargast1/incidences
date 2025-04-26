@@ -7,7 +7,16 @@ const KEYCLOAK_URL = process.env.NEXT_PUBLIC_KEYCLOAK_URL || 'https://incidencia
 const KEYCLOAK_REALM = process.env.NEXT_PUBLIC_KEYCLOAK_REALM || 'incidencias';
 const KEYCLOAK_ADMIN_REALM = process.env.NEXT_PUBLIC_KEYCLOAK_ADMIN_REALM || 'master';
 const KEYCLOAK_CLIENT_ID = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || 'back-service-incidents';
-const KEYCLOAK_CLIENT_SECRET = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_SECRET || 'MUBVY1TDs12thaZvyWSO4pqBE5A2K5rb';
+// In production, this should be set via environment variables
+// Use fallback only for development to prevent TypeScript errors
+const KEYCLOAK_CLIENT_SECRET = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_SECRET || 'development-only-secret';
+
+// Check if client secret is missing in production
+if (process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_SECRET === undefined && 
+    typeof window !== 'undefined' && 
+    window.location.hostname !== 'localhost') {
+  console.error('Missing Keycloak client secret from environment variables in production');
+}
 
 // Types for Keycloak responses
 interface KeycloakTokenResponse {
@@ -46,8 +55,17 @@ export async function getKeycloakAdminToken(): Promise<string> {
     
     const formData = new URLSearchParams();
     formData.append('client_id', 'admin-cli');
-    formData.append('username', 'desarrollo@t1envios.com');
-    formData.append('password', 'T1envios#2024');
+    // Get admin credentials from environment variables in production
+    const adminUser = process.env.NEXT_PUBLIC_KEYCLOAK_ADMIN_USER || 'desarrollo@t1envios.com';
+    const adminPassword = process.env.NEXT_PUBLIC_KEYCLOAK_ADMIN_PASSWORD;
+    
+    if (!adminPassword) {
+      console.error('Missing Keycloak admin password from environment variables');
+      throw new Error('Keycloak admin credentials not properly configured');
+    }
+    
+    formData.append('username', adminUser);
+    formData.append('password', adminPassword);
     formData.append('grant_type', 'password');
     
     const response = await fetch(adminTokenUrl, {

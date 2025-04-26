@@ -3,8 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 // La URL base de la API a la que queremos hacer proxy
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://apiv2.dev.t1envios.com';
 
-// Variable opcional para depuración
-const DEBUGGING = true;
+// Disable debugging in production
+const DEBUGGING = false;
 
 // Use a simpler approach for Next.js 15.2.2 compatibility
 export async function GET(request: NextRequest, context: any) {

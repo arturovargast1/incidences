@@ -21,6 +21,9 @@ export default function AppLayout({ children, notificationCount = 0 }: AppLayout
   const getUserInitials = () => {
     if (!user) return 'U';
     
+    // Debug: Log the user data to see what's available
+    console.log('User data in AppLayout:', user);
+    
     // Manejar caso donde first_name o last_name pueden ser undefined o null
     const firstInitial = user.first_name && typeof user.first_name === 'string' 
       ? user.first_name.charAt(0).toUpperCase() 

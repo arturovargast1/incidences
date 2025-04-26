@@ -14,8 +14,8 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   const [authChecked, setAuthChecked] = useState(true); // Set to true for testing
   const router = useRouter();
 
-  // TESTING MODE: Bypass authentication for development
-  const BYPASS_AUTH = true; // Set to true to bypass authentication checks
+  // Authentication must be enabled in production
+  const BYPASS_AUTH = false; // Set to false to enforce authentication
 
   // Verificar ambos tokens (sistema actual y Keycloak)
   function isUserAuthenticated(): boolean {

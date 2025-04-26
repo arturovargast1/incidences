@@ -259,7 +259,7 @@ export function getCurrentUser(): User | null {
     // Convertir el payload a un objeto User, manejando posibles diferencias en la estructura
     const user: User = {
       user_id: payload.user_id || payload.id || payload.sub || '',
-      email: payload.email || payload.preferred_username || payload.username || 'usuario@t1envios.com',
+      email: payload.sub || payload.email || payload.preferred_username || payload.username || 'usuario@t1envios.com',
       first_name: payload.first_name || payload.firstName || payload.given_name || payload.nombre || '',
       last_name: payload.last_name || payload.lastName || payload.family_name || payload.apellidos || '',
       job_position: payload.job_position || payload.puesto || '',
@@ -269,8 +269,10 @@ export function getCurrentUser(): User | null {
       active: true // Asumimos que está activo si el token es válido
     };
     
-    // Asegurarse que el email no esté vacío
-    if (!user.email || user.email.trim() === '') {
+    // Asegurarse que el email no esté vacío y correctamente formateado desde sub si está disponible
+    if (payload.sub && payload.sub.includes('@')) {
+      user.email = payload.sub; // Usar el sub como email cuando es una dirección de correo válida
+    } else if (!user.email || user.email.trim() === '') {
       user.email = 'usuario@t1envios.com';
     }
     
@@ -329,24 +331,67 @@ async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
  */
 async function fetchUserFromApi(): Promise<User | null> {
   try {
+    // First get the current user from the token - this is the authenticated user
+    const tokenUser = getCurrentUser();
+    console.log('Token user data:', JSON.stringify(tokenUser, null, 2));
+    
+    if (!tokenUser) {
+      console.warn('No valid user found in token');
+      return null;
+    }
+    
+    // Extract the JWT token again to get direct access to payload
+    const token = getToken();
+    if (!token) {
+      console.warn('No token available');
+      return null;
+    }
+    
+    // Decode the JWT payload directly to access sub
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(atob(base64));
+    console.log('Direct JWT payload for matching:', JSON.stringify(payload, null, 2));
+    
+    // Get the correct email for matching - prefer sub if it's an email address
+    const emailForMatching = (payload.sub && payload.sub.includes('@')) 
+      ? payload.sub 
+      : tokenUser.email;
+    
+    console.log('Using email for API matching:', emailForMatching);
+    
     // Intentar obtener la lista de usuarios
     const response = await fetchWithAuth('/incidence/users');
+    console.log('API users response:', JSON.stringify(response, null, 2));
     
     if (response && response.users && response.users.length > 0) {
-      // Buscar el usuario que coincida con el email en el token (si está disponible)
-      const tokenUser = getCurrentUser();
+      console.log('Available users from API:', response.users.map((u: User) => u.email));
       
-      if (tokenUser && tokenUser.email) {
-        const matchingUser = response.users.find((user: User) => user.email === tokenUser.email);
-        if (matchingUser) {
-          console.log('Found matching user by email:', matchingUser.email);
-          return matchingUser;
-        }
+      // Buscar el usuario que coincida con el email en el token (si está disponible)
+      const matchingUser = response.users.find((user: User) => 
+        user.email?.toLowerCase() === emailForMatching.toLowerCase()
+      );
+      
+      if (matchingUser) {
+        console.log('Found matching user by email:', matchingUser.email);
+        
+      // Create a merged user prioritizing token data for critical fields
+      const mergedUser = {
+        ...matchingUser,
+        user_id: tokenUser.user_id,  // Use user_id from token to maintain session consistency
+        email: tokenUser.email,      // Ensure we keep the authenticated email
+        role: tokenUser.role,        // Keep role from token as it defines permissions
+        company: tokenUser.company   // Keep company from token for consistency
+      };
+      
+      console.log('Using merged user data:', JSON.stringify(mergedUser, null, 2));
+      return mergedUser;
       }
       
-      // Si no encontramos un usuario que coincida, devolver el primer usuario
-      console.log('Using first user from list:', response.users[0].email);
-      return response.users[0];
+      // If no matching user is found in the API, PREFER the token user
+      // This ensures the logged-in user's info is used
+      console.log('No matching user found in API. Using token data for:', tokenUser.email);
+      return tokenUser;
     }
     
     return null;
@@ -396,7 +441,7 @@ let cachedUser: User | null = null;
  * Carga la información del usuario desde la API y la almacena en caché
  * Esta función se llama al iniciar la aplicación y después de cambios en la autenticación
  */
-export async function loadUserData(forceRefresh = false): Promise<User | null> {
+export async function loadUserData(forceRefresh = true): Promise<User | null> {
   try {
     // Verificar si el token actual es válido antes de usar datos en caché
     const currentToken = getToken();
@@ -408,18 +453,25 @@ export async function loadUserData(forceRefresh = false): Promise<User | null> {
     }
     
     // Si tenemos usuario en caché y no estamos forzando actualización, devolverlo
-    if (cachedUser && !forceRefresh) {
+    if (cachedUser && forceRefresh === false) {
       console.log('Usando usuario en caché:', cachedUser.email);
       return cachedUser;
     }
     
     // Si no estamos forzando actualización, intentar obtener el usuario desde localStorage
-    if (!forceRefresh) {
+    // Pero verificamos primero que el email coincida con el del token actual
+    if (forceRefresh === false) {
       const storedUser = getUserFromStorage();
-      if (storedUser) {
+      const tokenUser = getCurrentUser();
+      
+      if (storedUser && tokenUser && 
+          storedUser.email === tokenUser.email && 
+          storedUser.user_id === tokenUser.user_id) {
         console.log('Usando usuario de localStorage:', storedUser.email);
         cachedUser = storedUser;
         return storedUser;
+      } else if (storedUser) {
+        console.log('Usuario en localStorage no coincide con token, actualizando...');
       }
     }
     
@@ -477,13 +529,18 @@ export function useCurrentUser() {
       try {
         setLoading(true);
         
-        // Force a refresh of user data when there's no email or it's using the fallback
-        const shouldForceRefresh = !user || 
+        // Force a refresh of user data when needed
+        const tokenUser = getCurrentUser();
+        
+        const shouldForceRefresh = 
+          !user || 
           !user.email || 
           user.email === 'usuario@t1envios.com' ||
-          (user && user.email === 'usuario@t1envios.com');
+          (tokenUser && user && user.email !== tokenUser.email) ||
+          (tokenUser && user && user.user_id !== tokenUser.user_id);
         
-        const userData = await loadUserData(shouldForceRefresh);
+        // Ensure we pass a boolean, not possibly null or undefined
+        const userData = await loadUserData(shouldForceRefresh === true);
         
         // Double check that we actually have valid user data
         if (userData) {
