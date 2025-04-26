@@ -45,16 +45,24 @@ export interface IncidentTransitionTimes {
   inProcessToFinalized: number; // Tiempo en horas (corresponde a finalized.attention_time)
 }
 
+export interface StatusCounts {
+  activeCount: number; // Incidencias en proceso
+  closedCount: number; // Incidencias finalizadas
+  totalCount: number; // Total de incidencias
+}
+
 export interface AgentPerformance {
   agentId: string; // Usamos el email como ID
   agentName: string; // Nombre de usuario (usamos email por ahora)
   requiresActionToInProcess: number; // Tiempo en horas 
   inProcessToFinalized: number; // Tiempo en horas
   totalIncidentsHandled: number; // Total de incidencias manejadas
+  averageProcessingTime: number; // Tiempo promedio de procesamiento
 }
 
 export interface KpisData {
   overallTransitionTimes: IncidentTransitionTimes;
+  statusCounts: StatusCounts;
   agentPerformance: AgentPerformance[];
 }
 
@@ -107,12 +115,18 @@ export function useKpisStats(selectedAgentEmail: string = '') {
           requiresActionToInProcess: apiData.detail.status_details.in_process?.attention_time || 0,
           inProcessToFinalized: apiData.detail.status_details.finalized?.attention_time || 0
         },
+        statusCounts: {
+          activeCount: apiData.detail.status_details.in_process?.count || 0,
+          closedCount: apiData.detail.status_details.finalized?.count || 0,
+          totalCount: apiData.detail.status_details.total_count || 0
+        },
         agentPerformance: apiData.detail.users_by_email.map(user => ({
           agentId: user.email,
           agentName: user.email, // Usamos el email como nombre por ahora
           requiresActionToInProcess: user.details.in_process?.attention_time || 0,
           inProcessToFinalized: user.details.finalized?.attention_time || 0,
-          totalIncidentsHandled: user.total_count
+          totalIncidentsHandled: user.total_count,
+          averageProcessingTime: user.total_attention_time / (user.total_count || 1)
         }))
       };
       

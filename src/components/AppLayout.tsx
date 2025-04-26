@@ -78,7 +78,7 @@ export default function AppLayout({ children, notificationCount = 0 }: AppLayout
     if (pathname === '/incidents') return 'Gestión de incidencias';
     if (pathname.startsWith('/incidents/')) return 'Detalle de incidencia';
     if (pathname === '/users') return 'Gestión de usuarios';
-    if (pathname === '/kpis') return 'KPIs de Incidencias';
+    if (pathname === '/kpis') return 'Monitoreo de Incidencias';
     return 'Incidencias T1 Envíos';
   };
 
@@ -208,7 +208,7 @@ export default function AppLayout({ children, notificationCount = 0 }: AppLayout
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
                       </div>
-                      {sidebarOpen && <span className="ml-3 font-medium">KPIs</span>}
+                      {sidebarOpen && <span className="ml-3 font-medium">Monitoreo</span>}
                       {pathname === '/kpis' && (
                         <span className="absolute inset-y-0 left-0 w-1 bg-[var(--primary)] rounded-r-md"></span>
                       )}
